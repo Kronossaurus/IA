@@ -12,7 +12,7 @@ mutex mtx[100][100];
 //RAND_MAX = 2147483647
 class Formiga{
     public:
-        int x, y, estado, raio, id;
+        int x, y, estado, raio, id, lastm;
 };
 
 default_random_engine gerador;
@@ -72,7 +72,7 @@ void simular(Formiga *f, int n, char **mat){
         refazer = 0;
         do{
             m = round(distribuicao(gerador));
-        }while(m<1 || m>8);
+        }while(m<1 || m>8 || m == f->lastm);
         if(m==1 && f->x>0 && f->y>0){
             f->x--;
             f->y--;
@@ -193,6 +193,7 @@ int main(int argc, char **argv){
         f[i].raio = raio;
         f[i].estado = 0;
         f[i].id = i+1;
+        f[i].lastm = 0;
     }
     printMat(mat, n,f,vivas);
     for (int i=0; i<vivas; i++)//gambiarra
@@ -215,11 +216,16 @@ int main(int argc, char **argv){
         printMat(aux,n,f,vivas);
         usleep(SLEEP);
     }
-    for(int h=0; h < it; h++){
+    int h;
+    do{
+        h=0;
         for(int i=0;i<vivas;i++){
-            if(f[i].estado == 1)
+            if(f[i].estado == 1){
+                h=1;
                 th[i] = thread(simular,&f[i],n,mat);
+            }
         }
+
         for(int i=0;i<vivas;i++){
             if(th[i].joinable())
                 th[i].join();
@@ -232,7 +238,7 @@ int main(int argc, char **argv){
         }
         printMat(aux,n,f,vivas);
         usleep(SLEEP);
-    }
+    }while(h==1);
     for(int i=0;i<n;i++)
         free(mat[i]);
     free(mat);
