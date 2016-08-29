@@ -7,16 +7,18 @@
 #include <unistd.h>
 #define CHFOR '.'
 #define SLEEP 1e5
+#define MAXTH 200
 using namespace std;
 mutex mtx[100][100];
 //RAND_MAX = 2147483647
 class Formiga{
     public:
-        int x, y, estado, raio, id, lastm;
+        int x, y, estado, raio, lastm;
+	char id;
 };
 FILE *of;
 default_random_engine gerador;
-normal_distribution<double> distribuicao(4.5,3);
+normal_distribution<double> distribuicao(4.5,5);
 
 void initMat(char **mat, int n){
     for(int i=0;i<n;i++){
@@ -63,7 +65,7 @@ void printMat(char **mat, int n, Formiga *f, int vivas){
         }
         else{
             //cout<<f[i].id<<" "<<f[i].x<<" "<<f[i].y<<endl;
-            mat[f[i].x][f[i].y] = '0' + f[i].id;
+            mat[f[i].x][f[i].y] = f[i].id;
         }
     }
     for(int i=0; i<n+2; i++){
@@ -209,7 +211,7 @@ int main(int argc, char **argv){
     initMat(mat,n);
     srand(time(NULL));
     preencherMat(mat, itens, n);
-    Formiga f[8];
+    Formiga f[MAXTH];
     char **aux = (char**)malloc(sizeof(char*)*n);
     for (int i=0;i<n;i++){
         aux[i] = (char*)malloc(sizeof(char)*n);
@@ -224,7 +226,7 @@ int main(int argc, char **argv){
         f[i].y = rand()%n;
         f[i].raio = raio;
         f[i].estado = 0;
-        f[i].id = i+1;
+        f[i].id = 'o';
         f[i].lastm = 0;
     }
     printMat(mat, n,f,vivas);
@@ -232,7 +234,7 @@ int main(int argc, char **argv){
     fprintMat(mat,n);
     for (int i=0; i<vivas; i++)//gambiarra
         mat[f[i].x][f[i].y] = ' ';
-    thread th[8];
+    thread th[MAXTH];
     for(int h=0; h < it; h++){
         //cout<<h+1<<endl;
         for(int i=0;i<vivas;i++){

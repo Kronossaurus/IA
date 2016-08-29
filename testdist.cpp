@@ -4,7 +4,7 @@
 using namespace std;
 int main(){
     default_random_engine gerador(time(NULL));
-    normal_distribution<double> distribuicao(4.5,5);
+    normal_distribution<double> distribuicao(4.5,3);
     auto normal = bind(distribuicao, gerador);
     int x,aux;
     cin>>x;
