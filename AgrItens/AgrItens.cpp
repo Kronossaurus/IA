@@ -14,7 +14,7 @@ class Formiga{
     public:
         int x, y, estado, raio, id, lastm;
 };
-
+FILE *of;
 default_random_engine gerador;
 normal_distribution<double> distribuicao(4.5,3);
 
@@ -33,6 +33,25 @@ void preencherMat(char **mat, int itens, int n){
         if(mat[i][j] != CHFOR){
             mat[i][j] = CHFOR;
             k++;
+        }
+    }
+}
+void fprintMat(char **mat, int n){
+    for(int i=0; i<n+2; i++){
+        fprintf(of, "\n");
+        for(int j=0; j<n+2; j++){
+            if(i==0){
+                fprintf(of," -");
+            }
+            else if(i==n+1){
+                fprintf(of," -");
+            }
+            else{
+                if(j==0 || j==n+1)
+                    fprintf(of," |");
+                else
+                    fprintf(of, " %c",mat[i-1][j-1]);
+            }
         }
     }
 }
@@ -72,30 +91,42 @@ void simular(Formiga *f, int n, char **mat){
         refazer = 0;
         do{
             m = round(distribuicao(gerador));
-        }while(m<1 || m>8 || m == f->lastm);
+        }while(m<1 || m>8 || m == 9-f->lastm);
         if(m==1 && f->x>0 && f->y>0){
             f->x--;
             f->y--;
+            f->lastm = 1;
         }
-        else if(m==2 && f->x>0)
+        else if(m==2 && f->x>0){
             f->x--;
+            f->lastm = 2;
+        }
         else if(m==3 && f->x>0 && f->y<n-1){
             f->x--;
             f->y++;
+            f->lastm = 3;
         }
-        else if(m==4 && f->y>0)
+        else if(m==4 && f->y>0){
             f->y--;
-        else if(m==5 && f->y<n-1)
+            f->lastm = 4;
+        }
+        else if(m==5 && f->y<n-1){
             f->y++;
+            f->lastm = 5;
+        }
         else if(m==6 && f->x<n-1 && f->y>0){
             f->x++;
             f->y--;
+            f->lastm = 6;
         }
-        else if(m==7 && f->x<n-1)
+        else if(m==7 && f->x<n-1){
             f->x++;
+            f->lastm = 7;
+        }
         else if(m==8 && f->x<n-1 && f->y<n-1){
             f->x++;
             f->y++;
+            f->lastm = 8;
         }
         else
             refazer = 1;
@@ -187,6 +218,7 @@ int main(int argc, char **argv){
         }
     }
 
+    of = fopen("output.txt","w");
     for(int i=0;i<vivas;i++){
         f[i].x = rand()%n;
         f[i].y = rand()%n;
@@ -196,6 +228,8 @@ int main(int argc, char **argv){
         f[i].lastm = 0;
     }
     printMat(mat, n,f,vivas);
+    fprintf(of, "Matriz inicial:\n");
+    fprintMat(mat,n);
     for (int i=0; i<vivas; i++)//gambiarra
         mat[f[i].x][f[i].y] = ' ';
     thread th[8];
@@ -239,6 +273,8 @@ int main(int argc, char **argv){
         printMat(aux,n,f,vivas);
         usleep(SLEEP);
     }while(h==1);
+    fprintf(of,"\nResultado final:\n");
+    fprintMat(mat,n);
     for(int i=0;i<n;i++)
         free(mat[i]);
     free(mat);
