@@ -229,12 +229,14 @@ int main(int argc, char **argv){
         f[i].id = 'o';
         f[i].lastm = 0;
     }
+#ifndef semprint 
     printMat(mat, n,f,vivas);
-    fprintf(of, "Matriz inicial:\n");
-    fprintMat(mat,n);
+#endif
     for (int i=0; i<vivas; i++)//gambiarra
         mat[f[i].x][f[i].y] = ' ';
     thread th[MAXTH];
+    fprintf(of, "Matriz inicial:\n");
+    fprintMat(mat,n);
     for(int h=0; h < it; h++){
         //cout<<h+1<<endl;
         for(int i=0;i<vivas;i++){
@@ -244,6 +246,7 @@ int main(int argc, char **argv){
             th[i].join();
         }
 
+#ifndef semprint 
         for (int i=0;i<n;i++){
             for(int j=0;j<n;j++){
                 aux[i][j] = mat[i][j];
@@ -251,6 +254,7 @@ int main(int argc, char **argv){
         }
         printMat(aux,n,f,vivas);
         usleep(SLEEP);
+#endif
     }
     int h;
     do{
@@ -267,6 +271,7 @@ int main(int argc, char **argv){
                 th[i].join();
         }
 
+#ifndef semprint 
         for (int i=0;i<n;i++){
             for(int j=0;j<n;j++){
                 aux[i][j] = mat[i][j];
@@ -274,6 +279,7 @@ int main(int argc, char **argv){
         }
         printMat(aux,n,f,vivas);
         usleep(SLEEP);
+#endif
     }while(h==1);
     fprintf(of,"\nResultado final:\n");
     fprintMat(mat,n);
