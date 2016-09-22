@@ -1,11 +1,30 @@
 #include <cstdio>
 #include <vector>
+#include <algorithm>
+#include <cstdlib>
 #include <omp.h>
 using namespace std;
-int i0,j0,i1,j1;
+int x_0,y_0,x_1,y_1;
 
-int DFS(int **custo){
+int DFS(vector<vector<int> > custo){
     vector<pair<int,int> > v;
+    vector<pair<int,int> > mem;
+    int size = custo.size();
+    if(x_0>0)
+        v.push_back({x_0-1,y_0});
+    if(y_0<=size)
+        v.push_back({x_0,y_0+1});
+    if(x_0<=size)
+        v.push_back({x_0+1,y_0});
+    if(y0>0)
+        v.push_back({x_0,y_0-1});
+    while(!v.empty()){
+        pair<int,int> aux (v.front().first,v.front().second);
+        mem.push_back(aux);
+        v.erase(v.begin());
+        if(aux.second > 0){
+        }
+    }
     return 0;
 }
 int main(int argc, char **argv){
@@ -16,9 +35,11 @@ int main(int argc, char **argv){
     int metodo = atoi(argv[1]);
     int SIZE;
     scanf("%d",&SIZE);
-    scanf("%d %d",&i0,&j0);
-    scanf("%d %d",&i1,&j1);
-    int mat[SIZE][SIZE], custo[SIZE][SIZE];
+    scanf("%d %d",&x_0,&y_0);
+    scanf("%d %d",&x_1,&y_1);
+    vector<vector<int> > mat, custo;
+    mat.reserve(SIZE);
+    custo.reserve(SIZE);
 #pragma omp parallel for
     for(int i=0;i<SIZE;i++){
         for(int j=0;j<SIZE;j++){
@@ -34,6 +55,6 @@ int main(int argc, char **argv){
         }
     }
     if(metodo == 1)
-        DFS(&custo);
+        DFS(custo);
     return 0;
 }
