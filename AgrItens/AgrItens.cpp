@@ -19,7 +19,7 @@ class Formiga{
 FILE *of;
 default_random_engine gerador;
 normal_distribution<double> distribuicao(4.5,5);
-
+int vivas;
 void initMat(char **mat, int n){
     for(int i=0;i<n;i++){
         for(int j=0;j<n;j++){
@@ -86,107 +86,110 @@ void printMat(char **mat, int n, Formiga *f, int vivas){
         cout<<endl;
     }
 }
-void simular(Formiga *f, int n, char **mat){
+void simular(Formiga *f, int n, char **mat, int nf, int z){
     //movimento
     int m, refazer;
-    do{
-        refazer = 0;
+    for(int p=z;p<nf+z && p<vivas;p++){
         do{
-            m = round(distribuicao(gerador));
-        }while(m<1 || m>8 || m == 9-f->lastm);
-        if(m==1 && f->x>0 && f->y>0){
-            f->x--;
-            f->y--;
-            f->lastm = 1;
-        }
-        else if(m==2 && f->x>0){
-            f->x--;
-            f->lastm = 2;
-        }
-        else if(m==3 && f->x>0 && f->y<n-1){
-            f->x--;
-            f->y++;
-            f->lastm = 3;
-        }
-        else if(m==4 && f->y>0){
-            f->y--;
-            f->lastm = 4;
-        }
-        else if(m==5 && f->y<n-1){
-            f->y++;
-            f->lastm = 5;
-        }
-        else if(m==6 && f->x<n-1 && f->y>0){
-            f->x++;
-            f->y--;
-            f->lastm = 6;
-        }
-        else if(m==7 && f->x<n-1){
-            f->x++;
-            f->lastm = 7;
-        }
-        else if(m==8 && f->x<n-1 && f->y<n-1){
-            f->x++;
-            f->y++;
-            f->lastm = 8;
-        }
-        else
-            refazer = 1;
-    }while(refazer==1);
-    //decisao
-    mtx[f->x][f->y].lock();
-    int cont=0, cell=0, x, y;
-    if(f->estado == 0 && mat[f->x][f->y] == CHFOR){
-        for(int i=0;i<f->raio*2+1;i++){
-            for(int j=0;j<f->raio*2+1;j++){
-                if(i==f->raio && j==f->raio)
-                    continue;
-                x = f->x+i-f->raio;
-                y = f->y+j-f->raio;
-                if(x>=0 && y>=0 && x<n && y<n){
-                    cell++;
-                    if(mat[x][y] == CHFOR)
-                        cont++;
+            refazer = 0;
+            do{
+                m = round(distribuicao(gerador));
+            }while(m<1 || m>8 || m == 9-f[p].lastm);
+            if(m==1 && f[p].x>0 && f[p].y>0){
+                f[p].x--;
+                f[p].y--;
+                f[p].lastm = 1;
+            }
+            else if(m==2 && f[p].x>0){
+                f[p].x--;
+                f[p].lastm = 2;
+            }
+            else if(m==3 && f[p].x>0 && f[p].y<n-1){
+                f[p].x--;
+                f[p].y++;
+                f[p].lastm = 3;
+            }
+            else if(m==4 && f[p].y>0){
+                f[p].y--;
+                f[p].lastm = 4;
+            }
+            else if(m==5 && f[p].y<n-1){
+                f[p].y++;
+                f[p].lastm = 5;
+            }
+            else if(m==6 && f[p].x<n-1 && f[p].y>0){
+                f[p].x++;
+                f[p].y--;
+                f[p].lastm = 6;
+            }
+            else if(m==7 && f[p].x<n-1){
+                f[p].x++;
+                f[p].lastm = 7;
+            }
+            else if(m==8 && f[p].x<n-1 && f[p].y<n-1){
+                f[p].x++;
+                f[p].y++;
+                f[p].lastm = 8;
+            }
+            else
+                refazer = 1;
+        }while(refazer==1);
+        //decisao
+        mtx[f[p].x][f[p].y].lock();
+        int cont=0, cell=0, x, y;
+        if(f[p].estado == 0 && mat[f[p].x][f[p].y] == CHFOR){
+            for(int i=0;i<f[p].raio*2+1;i++){
+                for(int j=0;j<f[p].raio*2+1;j++){
+                    if(i==f[p].raio && j==f[p].raio)
+                        continue;
+                    x = f[p].x+i-f[p].raio;
+                    y = f[p].y+j-f[p].raio;
+                    if(x>=0 && y>=0 && x<n && y<n){
+                        cell++;
+                        if(mat[x][y] == CHFOR)
+                            cont++;
+                    }
                 }
             }
-        }
-        int p = 1+ rand()%99;
-        //cout<<f->x<<" "<<f->y<<" "<<cell<<endl;
-        if(p > cont*100/cell){
-            f->estado = 1;
-            mat[f->x][f->y] = ' ';
-        }
-    }
-    else if(f->estado == 1 && mat[f->x][f->y] == ' '){
-        for(int i=0;i<f->raio*2+1;i++){
-            for(int j=0;j<f->raio*2+1;j++){
-                if(i==f->raio && j==f->raio)
-                    continue;
-                x = f->x+i-f->raio;
-                y = f->y+j-f->raio;
-                if(x>=0 && y>=0 && x<n && y<n){
-                    cell++;
-                    if(mat[x][y] == CHFOR)
-                        cont++;
-                }
+            int p = 1+ rand()%99;
+            //cout<<f[p].x<<" "<<f[p].y<<" "<<cell<<endl;
+            if(p > cont*100/cell){
+                f[p].estado = 1;
+                mat[f[p].x][f[p].y] = ' ';
             }
         }
-        int p = 1+ rand()%99;
-        //cout<<f->x<<" "<<f->y<<" "<<cell<<endl;
-        if(p < cont*100/cell){
-            f->estado = 0;
-            mat[f->x][f->y] = CHFOR;
+        else if(f[p].estado == 1 && mat[f[p].x][f[p].y] == ' '){
+            for(int i=0;i<f[p].raio*2+1;i++){
+                for(int j=0;j<f[p].raio*2+1;j++){
+                    if(i==f[p].raio && j==f[p].raio)
+                        continue;
+                    x = f[p].x+i-f[p].raio;
+                    y = f[p].y+j-f[p].raio;
+                    if(x>=0 && y>=0 && x<n && y<n){
+                        cell++;
+                        if(mat[x][y] == CHFOR)
+                            cont++;
+                    }
+                }
+            }
+            int p = 1+ rand()%99;
+            //cout<<f[p].x<<" "<<f[p].y<<" "<<cell<<endl;
+            if(p < cont*100/cell){
+                f[p].estado = 0;
+                mat[f[p].x][f[p].y] = CHFOR;
+            }
         }
+        mtx[f[p].x][f[p].y].unlock();
     }
-    mtx[f->x][f->y].unlock();
 }
 int main(int argc, char **argv){
     //Restrições iniciais
-    if(argc != 6){
-        cout<<"Argumentos: Tamanho da matriz, Quantidade de itens, Quantidade de vivas, Raio de visão, iterações\n";
+    if(argc != 7){
+        cout<<"Argumentos: Tamanho da matriz, Quantidade de itens, Quantidade de vivas, Raio de visão, iterações, Número de Threads\n";
         return 0;
     }
-    int n = atoi(argv[1]), itens = atoi(argv[2]), vivas = atoi(argv[3]), raio = atoi(argv[4]), it = atoi(argv[5]);
+    int n = atoi(argv[1]), itens = atoi(argv[2]), raio = atoi(argv[4]), it = atoi(argv[5]), nt = atoi(argv[6]);
+    vivas = atoi(argv[3]);
     if(n <= 0){
         cout<<"Tamanho da matriz invalido\n";
         return 0;
@@ -237,12 +240,13 @@ int main(int argc, char **argv){
     thread th[MAXTH];
     fprintf(of, "Matriz inicial:\n");
     fprintMat(mat,n);
+    int cont = ceil(vivas/nt*1.0);
     for(int h=0; h < it; h++){
         //cout<<h+1<<endl;
-        for(int i=0;i<vivas;i++){
-            th[i] = thread(simular,&f[i],n,mat);
+        for(int i=0;i<nt;i++){
+            th[i] = thread(simular,&f[0],n,mat,cont, cont*i);
         }
-        for(int i=0;i<vivas;i++){
+        for(int i=0;i<nt;i++){
             th[i].join();
         }
 
@@ -256,31 +260,31 @@ int main(int argc, char **argv){
         usleep(SLEEP);
 #endif
     }
-    int h;
-    do{
-        h=0;
-        for(int i=0;i<vivas;i++){
-            if(f[i].estado == 1){
-                h=1;
-                th[i] = thread(simular,&f[i],n,mat);
-            }
-        }
+    //int h;
+    //do{
+        //h=0;
+        //for(int i=0;i<vivas;i++){
+            //if(f[i].estado == 1){
+                //h=1;
+                //th[i] = thread(simular,&f[i],n,mat,1);
+            //}
+        //}
 
-        for(int i=0;i<vivas;i++){
-            if(th[i].joinable())
-                th[i].join();
-        }
+        //for(int i=0;i<nt;i++){
+            //if(th[i].joinable())
+                //th[i].join();
+        //}
 
-#ifndef semprint 
-        for (int i=0;i<n;i++){
-            for(int j=0;j<n;j++){
-                aux[i][j] = mat[i][j];
-            }
-        }
-        printMat(aux,n,f,vivas);
-        usleep(SLEEP);
-#endif
-    }while(h==1);
+//#ifndef semprint 
+        //for (int i=0;i<n;i++){
+            //for(int j=0;j<n;j++){
+                //aux[i][j] = mat[i][j];
+            //}
+        //}
+        //printMat(aux,n,f,vivas);
+        //usleep(SLEEP);
+//#endif
+    //}while(h==1);
     fprintf(of,"\nResultado final:\n");
     fprintMat(mat,n);
     for(int i=0;i<n;i++)
