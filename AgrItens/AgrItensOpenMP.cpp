@@ -2,12 +2,10 @@
 #include <cstdlib>
 #include <cstdio>
 #include <random>
-#include <thread>
 #include <mutex>
 #include <unistd.h>
 #define CHFOR '.'
 #define SLEEP 1e5
-#define MAXTH 200
 using namespace std;
 mutex mtx[100][100];
 //RAND_MAX = 2147483647
@@ -19,6 +17,7 @@ class Formiga{
 FILE *of;
 default_random_engine gerador;
 normal_distribution<double> distribuicao(4.5,5);
+unsigned seedp;
 int vivas;
 void initMat(char **mat, int n){
     for(int i=0;i<n;i++){
@@ -214,8 +213,9 @@ int main(int argc, char **argv){
     initMat(mat,n);
     srand(time(NULL));
     preencherMat(mat, itens, n);
-    Formiga f[MAXTH];
+    Formiga f[vivas];
     char **aux = (char**)malloc(sizeof(char*)*n);
+#pragma omp parallel for num_threads(nt) shared(aux,mat)
     for (int i=0;i<n;i++){
         aux[i] = (char*)malloc(sizeof(char)*n);
         for(int j=0;j<n;j++){
@@ -224,9 +224,10 @@ int main(int argc, char **argv){
     }
 
     of = fopen("output.txt","w");
+#pragma omp parallel for shared(f)
     for(int i=0;i<vivas;i++){
-        f[i].x = rand()%n;
-        f[i].y = rand()%n;
+        f[i].x = rand_r(&seedp)%n;
+        f[i].y = rand_r(&seedp)%n;
         f[i].raio = raio;
         f[i].estado = 0;
         f[i].id = 'o';
@@ -237,13 +238,12 @@ int main(int argc, char **argv){
 #endif
     for (int i=0; i<vivas; i++)//gambiarra
         mat[f[i].x][f[i].y] = ' ';
-    thread th[MAXTH];
     fprintf(of, "Matriz inicial:\n");
     fprintMat(mat,n);
     int cont = ceil(vivas/nt*1.0);
     for(int h=0; h < it; h++){
         //cout<<h+1<<endl;
-	#pragma omp parallel for shared(f, n, mat, cont)
+#pragma omp parallel for num_threads(nt) shared(f, n, mat, cont)
         for(int i=0;i<nt;i++){
             simular(&f[0],n,mat,cont, cont*i);
         }
