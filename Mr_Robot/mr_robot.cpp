@@ -6,7 +6,7 @@
 #include <iterator>
 #include <unistd.h>
 #include <omp.h>
-#define SLEEP 7e4
+#define SLEEP 4e4
 using namespace std;
 int x_0,y_0,x_1,y_1, cont, size;
 
@@ -216,7 +216,7 @@ int BFS(vector<vector<int> > custo){
     }
     while(!v.empty()){
         printExp(mem);
-        usleep(1e5);
+        usleep(SLEEP);
         pair<int,int> aux (v.front().first,v.front().second);
         mem.push_back(aux);
         v.pop_front();
@@ -310,7 +310,7 @@ int BCU(vector<vector<int> > custo){
     }
     while(!v.empty()){
         printExp(mem);
-        usleep(1e5);
+        usleep(SLEEP);
         pair<int,int> aux (v.front().first,v.front().second);
         mem.push_back(aux);
         v.pop_front();
