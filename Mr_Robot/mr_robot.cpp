@@ -6,7 +6,7 @@
 #include <iterator>
 #include <unistd.h>
 #include <omp.h>
-#define SLEEP 4e4
+#define SLEEP 6e4
 using namespace std;
 int x_0,y_0,x_1,y_1, cont, size;
 
@@ -91,7 +91,6 @@ int DFS(vector<vector<int> > custo){
     }
 
     pair<int,int> destino(x_1,y_1);
-    int size = custo.size();
     cont = 1;
     if(x_0 == x_1 && y_0 == y_1){
         printf("Custo total: 0\nVértices visitados: 1\n");
@@ -185,7 +184,6 @@ int BFS(vector<vector<int> > custo){
     }
 
     pair<int,int> destino(x_1,y_1);
-    int size = custo.size();
     cont = 1;
     if(x_0 == x_1 && y_0 == y_1){
         printf("Custo total: 0\nVértices visitados: 1\n");
@@ -267,8 +265,12 @@ int BFS(vector<vector<int> > custo){
     }
     return 0;
 }
+typedef pair<pair<int,int>,int> Par2;
+bool compare (Par2 p1, Par2 p2){
+    return p1.second <= p2.second;
+}
 int BCU(vector<vector<int> > custo){
-    list<pair<int,int> > v;
+    list<Par2> v;
     vector<pair<int,int> > mem;
 
     vector<vector<resp> > r;
@@ -279,7 +281,6 @@ int BCU(vector<vector<int> > custo){
     }
 
     pair<int,int> destino(x_1,y_1);
-    int size = custo.size();
     cont = 1;
     if(x_0 == x_1 && y_0 == y_1){
         printf("Custo total: 0\nVértices visitados: 1\n");
@@ -289,75 +290,75 @@ int BCU(vector<vector<int> > custo){
     r[x_0][y_0].ant = {-1,-1};
     mem.push_back({x_0,y_0});
     if(x_0>0){
-        v.push_back({x_0-1,y_0});
+        v.push_back({{x_0-1,y_0},custo[x_0][y_0]});
         r[x_0-1][y_0].custo = r[x_0][y_0].custo + custo[x_0-1][y_0];
         r[x_0-1][y_0].ant = {x_0,y_0};
     }
     if(y_0<size-1){
-        v.push_back({x_0,y_0+1});
+        v.push_back({{x_0,y_0+1},custo[x_0][y_0]});
         r[x_0][y_0+1].custo = r[x_0][y_0].custo + custo[x_0][y_0+1];
         r[x_0][y_0+1].ant = {x_0,y_0};
     }
     if(x_0<size-1){
-        v.push_back({x_0+1,y_0});
+        v.push_back({{x_0+1,y_0},custo[x_0][y_0]});
         r[x_0+1][y_0].custo = r[x_0][y_0].custo + custo[x_0+1][y_0];
         r[x_0+1][y_0].ant = {x_0,y_0};
     }
     if(y_0>0){
-        v.push_back({x_0,y_0-1});
+        v.push_back({{x_0,y_0-1},custo[x_0][y_0]});
         r[x_0][y_0-1].custo = r[x_0][y_0].custo + custo[x_0][y_0-1];
         r[x_0][y_0-1].ant = {x_0,y_0};
     }
+    v.sort(compare);
     while(!v.empty()){
         printExp(mem);
         usleep(SLEEP);
-        pair<int,int> aux (v.front().first,v.front().second);
+        pair<int,int> aux (v.front().first.first,v.front().first.second);
         mem.push_back(aux);
         v.pop_front();
-        cont++;
-        //printf("%d\n",cont);
+        printf("%d\n",cont);
         if(aux == destino){
-            //r.clear();
-            //r.shrink_to_fit();
-            //mem.clear();
-            //mem.shrink_to_fit();
-            //v.clear();
             printResp(custo,r);
             printf("Custo Total: %d\nVértices visitados: %d\n",r[x_1][y_1].custo, cont);
             return 0;
         }
         if(aux.first > 0){
             pair<int,int> norte(aux.first-1,aux.second);
-            if(find(mem.begin(),mem.end(),norte) == mem.end() && find(v.begin(),v.end(),norte)==v.end()){
-                v.push_back(norte);
+            if(find(mem.begin(),mem.end(),norte) == mem.end()){
+                v.push_back({norte,r[aux.first][aux.second].custo});
                 r[norte.first][norte.second].custo = r[aux.first][aux.second].custo + custo[norte.first][norte.second];
                 r[norte.first][norte.second].ant = {aux.first,aux.second};
+                cont++;
             }
         }
         if(aux.second < size-1){
             pair<int,int> leste(aux.first,aux.second+1);
-            if(find(mem.begin(),mem.end(),leste) == mem.end() && find(v.begin(),v.end(),leste)==v.end()){
-                v.push_back(leste);
+            if(find(mem.begin(),mem.end(),leste) ==mem.end()){
+                v.push_back({leste,r[aux.first][aux.second].custo});
                 r[leste.first][leste.second].custo = r[aux.first][aux.second].custo + custo[leste.first][leste.second];
                 r[leste.first][leste.second].ant = {aux.first,aux.second};
+                cont++;
             }
         }
         if(aux.first < size-1){
             pair<int,int> sul(aux.first+1,aux.second);
-            if(find(mem.begin(),mem.end(),sul) == mem.end() && find(v.begin(),v.end(),sul)==v.end()){
-                v.push_back(sul);
+            if(find(mem.begin(),mem.end(),sul) ==mem.end()){
+                v.push_back({sul,r[aux.first][aux.second].custo});
                 r[sul.first][sul.second].custo = r[aux.first][aux.second].custo + custo[sul.first][sul.second];
                 r[sul.first][sul.second].ant = {aux.first,aux.second};
+                cont++;
             }
         }
         if(aux.second > 0){
             pair<int,int> oeste(aux.first,aux.second-1);
-            if(find(mem.begin(),mem.end(),oeste) == mem.end() && find(v.begin(),v.end(),oeste)==v.end()){
-                v.push_back(oeste);
+            if(find(mem.begin(),mem.end(),oeste) ==mem.end()){
+                v.push_back({oeste,r[aux.first][aux.second].custo});
                 r[oeste.first][oeste.second].custo = r[aux.first][aux.second].custo + custo[oeste.first][oeste.second];
                 r[oeste.first][oeste.second].ant = {aux.first,aux.second};
+                cont++;
             }
         }
+        v.sort(compare);
     }
     return 0;
 }
@@ -394,5 +395,7 @@ int main(int argc, char **argv){
         DFS(custo);
     else if(metodo == 'l')
         BFS(custo);
+    else if(metodo == 'u')
+        BCU(custo);
     return 0;
 }
