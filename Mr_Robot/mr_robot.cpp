@@ -14,6 +14,11 @@ typedef struct r{
     pair<int,int> ant;
     int custo;
 }resp;
+class Star{
+    public:
+    int x,y,custo,xant,yant;
+    Star(int x, int y, int custo, int xant, int yant) : x(x), y(y), custo(custo), xant(xant), yant(yant){};
+};
 void printResp(vector<vector<int> > v, vector<vector<resp> > r){
     for(int i=0;i<11;i++)
         printf("%d - %d\n",r[0][i].ant.first,r[0][i].ant.second);
@@ -53,6 +58,8 @@ void printResp(vector<vector<int> > v, vector<vector<resp> > r){
         }
         usleep(SLEEP);
     }
+    for(auto it = listr.cbegin(); it!=listr.cend();it++)
+        printf("(%d-%d)\n", it->first,it->second);
 }
 void printExp(vector<pair<int,int> > v){
     char mat[size][size];
@@ -265,12 +272,11 @@ int BFS(vector<vector<int> > custo){
     }
     return 0;
 }
-typedef pair<pair<int,int>,int> Par2;
-bool compare (Par2 p1, Par2 p2){
-    return p1.second <= p2.second;
+bool compare (Star p1, Star p2){
+    return p1.custo <= p2.custo;
 }
 int BCU(vector<vector<int> > custo){
-    list<Par2> v;
+    list<Star> v;
     vector<pair<int,int> > mem;
 
     vector<vector<resp> > r;
@@ -286,22 +292,23 @@ int BCU(vector<vector<int> > custo){
         printf("Custo total: 0\nVértices visitados: 1\n");
         return 0;
     }
-    v.push_back({{x_0,y_0},custo[x_0][y_0]});
-    r[x_0][y_0].ant = {-1,-1};
+    Star saux (x_0,y_0,custo[x_0][y_0],-1,-1);
+    v.push_back(saux);
     while(!v.empty()){
         printExp(mem);
         usleep(SLEEP);
-        pair<int,int> aux (v.front().first.first,v.front().first.second);
-        int caux = v.front().second;
+        pair<int,int> aux (v.front().x,v.front().y);
+        int caux = v.front().custo;
         mem.push_back(aux);
         cont++;
+        r[aux.first][aux.second].ant = {v.front().xant,v.front().yant};
         v.pop_front();
 
         auto it = v.cbegin();
         while(it!=v.cend()){
-            printf("%d %d\n", it->first.first, it->first.second);
-            if(it->first.first == aux.first && it->first.second == aux.second){
-                printf("!\n");
+            //printf("%d %d\n", it->first.first, it->first.second);
+            if(it->x == aux.first && it->y == aux.second){
+                //printf("!\n");
                 it = v.erase(it);
             }
             it++;
@@ -318,35 +325,128 @@ int BCU(vector<vector<int> > custo){
             pair<int,int> norte(aux.first-1,aux.second);
             if(find(mem.begin(),mem.end(),norte) == mem.end()){
                 //printf("%d %d\n",norte.first,norte.second);
-                v.push_back({norte,r[aux.first][aux.second].custo + custo[norte.first][norte.second]});
-                r[norte.first][norte.second].ant = {aux.first,aux.second};
+                Star vnorte(norte.first,norte.second,r[aux.first][aux.second].custo + custo[norte.first][norte.second],aux.first,aux.second);
+                v.push_back(vnorte);
             }
         }
         if(aux.second < size-1){
             pair<int,int> leste(aux.first,aux.second+1);
             if(find(mem.begin(),mem.end(),leste) == mem.end()){
                 //printf("%d %d\n",leste.first,leste.second);
-                v.push_back({leste,r[aux.first][aux.second].custo + custo[leste.first][leste.second]});
-                r[leste.first][leste.second].ant = {aux.first,aux.second};
+                Star vleste(leste.first,leste.second,r[aux.first][aux.second].custo + custo[leste.first][leste.second],aux.first,aux.second);
+                v.push_back(vleste);
             }
         }
         if(aux.first < size-1){
             pair<int,int> sul(aux.first+1,aux.second);
             if(find(mem.begin(),mem.end(),sul) == mem.end()){
                 //printf("%d %d\n",sul.first,sul.second);
-                v.push_back({sul,r[aux.first][aux.second].custo + custo[sul.first][sul.second]});
-                r[sul.first][sul.second].ant = {aux.first,aux.second};
+                Star vsul(sul.first,sul.second,r[aux.first][aux.second].custo + custo[sul.first][sul.second],aux.first,aux.second);
+                v.push_back(vsul);
             }
         }
         if(aux.second > 0){
             pair<int,int> oeste(aux.first,aux.second-1);
             if(find(mem.begin(),mem.end(),oeste) == mem.end()){
                 //printf("%d %d\n",oeste.first,oeste.second);
-                v.push_back({oeste,r[aux.first][aux.second].custo + custo[oeste.first][oeste.second]});
-                r[oeste.first][oeste.second].ant = {aux.first,aux.second};
+                Star voeste(oeste.first,oeste.second,r[aux.first][aux.second].custo + custo[oeste.first][oeste.second],aux.first,aux.second);
+                v.push_back(voeste);
             }
         }
         v.sort(compare);
+    }
+    return 0;
+}
+bool compareAst (Star p1, Star p2){
+    return p1.custo + abs(p1.x-x_1) + abs(p1.y-y_1) <= p2.custo + abs(p2.x-x_1) + abs(p2.y-y_1);
+}
+bool compareAst2 (Star p1, Star p2){
+    int dist1 = sqrt(abs(p1.x-x_1) + abs(p1.y-y_1));
+    int dist2 = sqrt(abs(p2.x-x_1) + abs(p2.y-y_1));
+    //printf("%d %d\n",dist1,dist2);
+    return p1.custo + dist1 <= p2.custo + dist2;
+}
+int AStar(vector<vector<int> > custo){
+    list<Star> v;
+    vector<pair<int,int> > mem;
+
+    vector<vector<resp> > r;
+    r.resize(size);
+#pragma omp parallel for
+    for(int i=0;i<size;i++){
+        r[i].resize(size);
+    }
+
+    pair<int,int> destino(x_1,y_1);
+    cont = 0;
+    if(x_0 == x_1 && y_0 == y_1){
+        printf("Custo total: 0\nVértices visitados: 1\n");
+        return 0;
+    }
+    Star saux (x_0,y_0,custo[x_0][y_0],-1,-1);
+    v.push_back(saux);
+    r[x_0][y_0].ant = {-1,-1};
+    while(!v.empty()){
+        printExp(mem);
+        usleep(SLEEP);
+        pair<int,int> aux (v.front().x,v.front().y);
+        int caux = v.front().custo;
+        mem.push_back(aux);
+        cont++;
+        r[aux.first][aux.second].ant = {v.front().xant,v.front().yant};
+        v.pop_front();
+
+        auto it = v.cbegin();
+        while(it!=v.cend()){
+            //printf("%d %d\n", it->first.first, it->first.second);
+            if(it->x == aux.first && it->y == aux.second){
+                //printf("!\n");
+                it = v.erase(it);
+            }
+            it++;
+        }
+
+        r[aux.first][aux.second].custo = caux;
+        printf("%d\n",cont);
+        if(aux == destino){
+            printResp(custo,r);
+            printf("Custo Total: %d\nVértices visitados: %d\n",r[x_1][y_1].custo, cont);
+            return 0;
+        }
+        if(aux.first > 0){
+            Star vnorte(aux.first-1,aux.second,custo[aux.first-1][aux.second]+r[aux.first][aux.second].custo,aux.first,aux.second);
+            pair<int,int> norte(aux.first-1,aux.second);
+            if(find(mem.begin(),mem.end(),norte) == mem.end()){
+                //printf("%d %d\n",norte.first,norte.second);
+                v.push_back(vnorte);
+            }
+        }
+        if(aux.second < size-1){
+            Star vleste(aux.first,aux.second+1,custo[aux.first][aux.second+1]+r[aux.first][aux.second].custo,aux.first,aux.second);
+            pair<int,int> leste(aux.first,aux.second+1);
+            if(find(mem.begin(),mem.end(),leste) == mem.end()){
+                //printf("%d %d\n",leste.first,leste.second);
+                v.push_back(vleste);
+            }
+        }
+        if(aux.first < size-1){
+            Star vsul(aux.first+1,aux.second,custo[aux.first+1][aux.second]+r[aux.first][aux.second].custo,aux.first,aux.second);
+            pair<int,int> sul(aux.first+1,aux.second);
+            if(find(mem.begin(),mem.end(),sul) == mem.end()){
+                //printf("%d %d\n",sul.first,sul.second);
+                v.push_back(vsul);
+            }
+        }
+        if(aux.second > 0){
+            Star voeste(aux.first,aux.second-1,custo[aux.first][aux.second-1]+r[aux.first][aux.second].custo,aux.first,aux.second);
+            pair<int,int> oeste(aux.first,aux.second-1);
+            if(find(mem.begin(),mem.end(),oeste) == mem.end()){
+                //printf("%d %d\n",oeste.first,oeste.second);
+                v.push_back(voeste);
+            }
+        }
+        v.sort(compareAst);
+        //v.sort(compareAst2);
     }
     return 0;
 }
@@ -385,5 +485,7 @@ int main(int argc, char **argv){
         BFS(custo);
     else if(metodo == 'u')
         BCU(custo);
+    else if(metodo == 'a')
+        AStar(custo);
     return 0;
 }
