@@ -281,41 +281,33 @@ int BCU(vector<vector<int> > custo){
     }
 
     pair<int,int> destino(x_1,y_1);
-    cont = 1;
+    cont = 0;
     if(x_0 == x_1 && y_0 == y_1){
         printf("Custo total: 0\nVértices visitados: 1\n");
         return 0;
     }
-    r[x_0][y_0].custo = custo[x_0][y_0];
+    v.push_back({{x_0,y_0},custo[x_0][y_0]});
     r[x_0][y_0].ant = {-1,-1};
-    mem.push_back({x_0,y_0});
-    if(x_0>0){
-        v.push_back({{x_0-1,y_0},custo[x_0][y_0]});
-        r[x_0-1][y_0].custo = r[x_0][y_0].custo + custo[x_0-1][y_0];
-        r[x_0-1][y_0].ant = {x_0,y_0};
-    }
-    if(y_0<size-1){
-        v.push_back({{x_0,y_0+1},custo[x_0][y_0]});
-        r[x_0][y_0+1].custo = r[x_0][y_0].custo + custo[x_0][y_0+1];
-        r[x_0][y_0+1].ant = {x_0,y_0};
-    }
-    if(x_0<size-1){
-        v.push_back({{x_0+1,y_0},custo[x_0][y_0]});
-        r[x_0+1][y_0].custo = r[x_0][y_0].custo + custo[x_0+1][y_0];
-        r[x_0+1][y_0].ant = {x_0,y_0};
-    }
-    if(y_0>0){
-        v.push_back({{x_0,y_0-1},custo[x_0][y_0]});
-        r[x_0][y_0-1].custo = r[x_0][y_0].custo + custo[x_0][y_0-1];
-        r[x_0][y_0-1].ant = {x_0,y_0};
-    }
-    v.sort(compare);
     while(!v.empty()){
         printExp(mem);
         usleep(SLEEP);
         pair<int,int> aux (v.front().first.first,v.front().first.second);
+        int caux = v.front().second;
         mem.push_back(aux);
+        cont++;
         v.pop_front();
+
+        auto it = v.cbegin();
+        while(it!=v.cend()){
+            printf("%d %d\n", it->first.first, it->first.second);
+            if(it->first.first == aux.first && it->first.second == aux.second){
+                printf("!\n");
+                it = v.erase(it);
+            }
+            it++;
+        }
+
+        r[aux.first][aux.second].custo = caux;
         printf("%d\n",cont);
         if(aux == destino){
             printResp(custo,r);
@@ -325,37 +317,33 @@ int BCU(vector<vector<int> > custo){
         if(aux.first > 0){
             pair<int,int> norte(aux.first-1,aux.second);
             if(find(mem.begin(),mem.end(),norte) == mem.end()){
-                v.push_back({norte,r[aux.first][aux.second].custo});
-                r[norte.first][norte.second].custo = r[aux.first][aux.second].custo + custo[norte.first][norte.second];
+                //printf("%d %d\n",norte.first,norte.second);
+                v.push_back({norte,r[aux.first][aux.second].custo + custo[norte.first][norte.second]});
                 r[norte.first][norte.second].ant = {aux.first,aux.second};
-                cont++;
             }
         }
         if(aux.second < size-1){
             pair<int,int> leste(aux.first,aux.second+1);
-            if(find(mem.begin(),mem.end(),leste) ==mem.end()){
-                v.push_back({leste,r[aux.first][aux.second].custo});
-                r[leste.first][leste.second].custo = r[aux.first][aux.second].custo + custo[leste.first][leste.second];
+            if(find(mem.begin(),mem.end(),leste) == mem.end()){
+                //printf("%d %d\n",leste.first,leste.second);
+                v.push_back({leste,r[aux.first][aux.second].custo + custo[leste.first][leste.second]});
                 r[leste.first][leste.second].ant = {aux.first,aux.second};
-                cont++;
             }
         }
         if(aux.first < size-1){
             pair<int,int> sul(aux.first+1,aux.second);
-            if(find(mem.begin(),mem.end(),sul) ==mem.end()){
-                v.push_back({sul,r[aux.first][aux.second].custo});
-                r[sul.first][sul.second].custo = r[aux.first][aux.second].custo + custo[sul.first][sul.second];
+            if(find(mem.begin(),mem.end(),sul) == mem.end()){
+                //printf("%d %d\n",sul.first,sul.second);
+                v.push_back({sul,r[aux.first][aux.second].custo + custo[sul.first][sul.second]});
                 r[sul.first][sul.second].ant = {aux.first,aux.second};
-                cont++;
             }
         }
         if(aux.second > 0){
             pair<int,int> oeste(aux.first,aux.second-1);
-            if(find(mem.begin(),mem.end(),oeste) ==mem.end()){
-                v.push_back({oeste,r[aux.first][aux.second].custo});
-                r[oeste.first][oeste.second].custo = r[aux.first][aux.second].custo + custo[oeste.first][oeste.second];
+            if(find(mem.begin(),mem.end(),oeste) == mem.end()){
+                //printf("%d %d\n",oeste.first,oeste.second);
+                v.push_back({oeste,r[aux.first][aux.second].custo + custo[oeste.first][oeste.second]});
                 r[oeste.first][oeste.second].ant = {aux.first,aux.second};
-                cont++;
             }
         }
         v.sort(compare);
