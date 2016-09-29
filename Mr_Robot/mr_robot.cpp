@@ -58,8 +58,8 @@ void printResp(vector<vector<int> > v, vector<vector<resp> > r){
         }
         usleep(SLEEP);
     }
-    for(auto it = listr.cbegin(); it!=listr.cend();it++)
-        printf("(%d-%d)\n", it->first,it->second);
+    //for(auto it = listr.cbegin(); it!=listr.cend();it++)
+        //printf("(%d-%d)\n", it->first,it->second);
 }
 void printExp(vector<pair<int,int> > v){
     char mat[size][size];
@@ -304,14 +304,15 @@ int BCU(vector<vector<int> > custo){
         r[aux.first][aux.second].ant = {v.front().xant,v.front().yant};
         v.pop_front();
 
-        auto it = v.cbegin();
-        while(it!=v.cend()){
+        auto it = v.begin();
+        while(it!=v.end()){
             //printf("%d %d\n", it->first.first, it->first.second);
             if(it->x == aux.first && it->y == aux.second){
                 //printf("!\n");
                 it = v.erase(it);
             }
-            it++;
+            else
+                it++;
         }
 
         r[aux.first][aux.second].custo = caux;
@@ -396,14 +397,15 @@ int AStar(vector<vector<int> > custo){
         r[aux.first][aux.second].ant = {v.front().xant,v.front().yant};
         v.pop_front();
 
-        auto it = v.cbegin();
-        while(it!=v.cend()){
+        auto it = v.begin();
+        while(it!=v.end()){
             //printf("%d %d\n", it->first.first, it->first.second);
             if(it->x == aux.first && it->y == aux.second){
                 //printf("!\n");
                 it = v.erase(it);
             }
-            it++;
+            else
+                it++;
         }
 
         r[aux.first][aux.second].custo = caux;
