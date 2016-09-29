@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <omp.h>
 #define SLEEP 6e4
+#define PESO_DIST 1
 using namespace std;
 int x_0,y_0,x_1,y_1, cont, size;
 
@@ -359,7 +360,7 @@ int BCU(vector<vector<int> > custo){
     return 0;
 }
 bool compareAst (Star p1, Star p2){
-    return p1.custo + abs(p1.x-x_1) + abs(p1.y-y_1) <= p2.custo + abs(p2.x-x_1) + abs(p2.y-y_1);
+    return p1.custo + (abs(p1.x-x_1) + abs(p1.y-y_1))*PESO_DIST <= p2.custo + (abs(p2.x-x_1) + abs(p2.y-y_1))*PESO_DIST;
 }
 bool compareAst2 (Star p1, Star p2){
     int dist1 = sqrt(abs(p1.x-x_1) + abs(p1.y-y_1));
@@ -454,7 +455,7 @@ int AStar(vector<vector<int> > custo){
 }
 int main(int argc, char **argv){
     if(argc != 3){
-        printf("Argumentos:\n1 - Arquivo de ambiente\n2 - Método de busca:\n\t'p' - Busca em Profundidade\n\t'l' - Busca em Largura\n\t'c' - Busca com Custo Unitário\n");
+        printf("Argumentos:\n1 - Arquivo de ambiente\n2 - Método de busca:\n\t'p' - Busca em Profundidade\n\t'l' - Busca em Largura\n\t'u' - Busca com Custo Unitário\n\t'a' - A*\n");
         return 0;
     }
     FILE *f = fopen(argv[1], "r");
