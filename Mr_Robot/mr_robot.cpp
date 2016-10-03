@@ -21,8 +21,8 @@ class Star{
     Star(int x, int y, int custo, int xant, int yant) : x(x), y(y), custo(custo), xant(xant), yant(yant){};
 };
 void printResp(vector<vector<int> > v, vector<vector<resp> > r){
-    for(int i=0;i<11;i++)
-        printf("%d - %d\n",r[0][i].ant.first,r[0][i].ant.second);
+    //for(int i=0;i<11;i++)
+        //printf("%d - %d\n",r[0][i].ant.first,r[0][i].ant.second);
     char mat[size][size];
     for(int i=0; i<size; i++)
         for(int j=0; j<size; j++)
@@ -61,6 +61,47 @@ void printResp(vector<vector<int> > v, vector<vector<resp> > r){
     }
     //for(auto it = listr.cbegin(); it!=listr.cend();it++)
         //printf("(%d-%d)\n", it->first,it->second);
+}
+void printFinal(vector<vector<int> > v, vector<vector<resp> > r){
+    char mat[size][size];
+    for(int i=0; i<size; i++)
+        for(int j=0; j<size; j++)
+            if(v[i][j] == 1)
+                mat[i][j] = ' ';
+            else if(v[i][j] == 5)
+                mat[i][j] = '.';
+            else if(v[i][j] == 10)
+                mat[i][j] = ';';
+            else
+                mat[i][j] = 'j';
+    mat[x_1][y_1] = 'D';
+    list<pair<int,int> > listr;
+    pair<int,int> fim(-1,-1),aux(x_1,y_1);
+    while((aux = r[aux.first][aux.second].ant) != fim){
+        //printf("%d - %d\n",aux.first,aux.second);
+        listr.push_front(aux);
+    }
+    for(list<pair<int,int> >::iterator it=listr.begin();it!=listr.end();it++){
+        if(it->first == x_0 && it->second ==y_0)
+            mat[it->first][it->second] = 'R';
+        else if(it->first == x_1 && it->second ==y_1)
+            mat[it->first][it->second] = 'D';
+        else
+            mat[it->first][it->second] = 'x';
+    }
+    for(int i=0; i<size+2; i++){
+        for(int j=0; j<size+2; j++){
+            if(i==0 || i==size+1){
+                printf(" -");
+            }
+            else if(j==size+1 || j==0){
+                printf(" |");
+            }
+            else
+                printf(" %c",mat[i-1][j-1]);
+        }
+        printf("\n");
+    }
 }
 void printExp(vector<pair<int,int> > v){
     char mat[size][size];
@@ -136,13 +177,10 @@ int DFS(vector<vector<int> > custo){
         cont++;
         //printf("%d\n",cont);
         if(aux == destino){
-            //r.clear();
-            //r.shrink_to_fit();
-            //mem.clear();
-            //mem.shrink_to_fit();
-            //v.clear();
+            getchar();
             printResp(custo,r);
             printf("Custo Total: %d\nVértices visitados: %d\n",r[x_1][y_1].custo, cont);
+            printFinal(custo,r);
             return 0;
         }
         if(aux.second > 0){
@@ -229,13 +267,10 @@ int BFS(vector<vector<int> > custo){
         cont++;
         //printf("%d\n",cont);
         if(aux == destino){
-            //r.clear();
-            //r.shrink_to_fit();
-            //mem.clear();
-            //mem.shrink_to_fit();
-            //v.clear();
+            getchar();
             printResp(custo,r);
             printf("Custo Total: %d\nVértices visitados: %d\n",r[x_1][y_1].custo, cont);
+            printFinal(custo,r);
             return 0;
         }
         if(aux.first > 0){
@@ -319,8 +354,10 @@ int BCU(vector<vector<int> > custo){
         r[aux.first][aux.second].custo = caux;
         printf("%d\n",cont);
         if(aux == destino){
+            getchar();
             printResp(custo,r);
             printf("Custo Total: %d\nVértices visitados: %d\n",r[x_1][y_1].custo, cont);
+            printFinal(custo,r);
             return 0;
         }
         if(aux.first > 0){
@@ -412,8 +449,10 @@ int AStar(vector<vector<int> > custo){
         r[aux.first][aux.second].custo = caux;
         printf("%d\n",cont);
         if(aux == destino){
+            getchar();
             printResp(custo,r);
             printf("Custo Total: %d\nVértices visitados: %d\n",r[x_1][y_1].custo, cont);
+            printFinal(custo,r);
             return 0;
         }
         if(aux.first > 0){
