@@ -2,7 +2,12 @@
 #include <string>
 #include <bitset>
 #include <cstdlib>
+#include <cmath>
 #define BSIZE 250
+#define T0 500000
+#define TN 0
+#define N 500000
+#define STAG 500
 using namespace std;
 int v,nc;
 typedef struct cl{
@@ -66,7 +71,30 @@ int main(int argc, char **argv){
             }
         }
     }
-    printf("%d\n",foo(r,vet));
+    int smaior = foo(r,vet);
+    double temp = T0;
+    int stag = 0, i;
+    for(i=0; i<N; i++){
+        int score = foo(r,vet);
+        if(score>=smaior){
+            maior = r;
+            smaior = score;
+        }
+        int j = rand()%v;
+        r.flip(j);
+        int newscore = foo(r,vet);
+        int delta = score - newscore;
+        if(newscore>score){
+            stag=0;
+            continue;
+        }
+        stag++;
+        if(exp(-delta/temp)<(rand()%1001)/1000.0)
+            r.flip(j);
+        temp=(T0-TN)/(1+exp(.3*(i - N/2))) + TN;
+    }
+
+    printf("Iterações:%d Cláusulas satisfeitas:%d\n",i,foo(r,vet));
     printBit(maior);
     fclose(f);
     return 0;
