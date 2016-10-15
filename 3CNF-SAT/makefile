@@ -1,2 +1,2 @@
 all:
-	g++ -Wall sa.cpp -o SA
+	g++ -Wall sa.cpp -o SA -fopenmp

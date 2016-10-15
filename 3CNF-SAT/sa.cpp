@@ -3,11 +3,12 @@
 #include <bitset>
 #include <cstdlib>
 #include <cmath>
+#include <omp.h>
 #define BSIZE 250
 #define T0 500000
 #define TN 0
 #define N 500000
-#define STAG 500
+#define STAG 100
 using namespace std;
 int v,nc;
 typedef struct cl{
@@ -15,10 +16,10 @@ typedef struct cl{
     unsigned p[3];
 }cl;
 int foo(bitset<BSIZE> r, cl *vet){
-    int cont = 0;
-    for(int i=0; i<nc; i++){
-        unsigned aux[3] = {vet[i].p[0],vet[i].p[1],vet[i].p[2]};
-        if(r[aux[0]] == vet[0].b[0] || r[aux[1]] == vet[1].b[1] || r[aux[2]] == vet[2].b[2])
+    int cont = 0,i;
+//#pragma omp parallel for private(i) shared(vet,cont,nc)
+    for(i=0; i<nc; i++){
+        if(r[vet[i].p[0]] == vet[0].b[0] || r[vet[i].p[1]] == vet[1].b[1] || r[vet[i].p[2]] == vet[2].b[2])
             cont++;
     }
     return cont;
@@ -74,7 +75,7 @@ int main(int argc, char **argv){
     int smaior = foo(r,vet);
     double temp = T0;
     int stag = 0, i;
-    for(i=0; i<N; i++){
+    for(i=0; i<N && stag<STAG; i++){
         int score = foo(r,vet);
         if(score>=smaior){
             maior = r;
