@@ -9,6 +9,7 @@
 #define TN 0
 #define N 500000
 #define STAG 100
+#define IT 10
 using namespace std;
 int v,nc;
 typedef struct cl{
@@ -51,12 +52,6 @@ int main(int argc, char **argv){
     bitset<BSIZE> r, maior;
     cl vet[nc];
 
-    for(int i=0; i<v; i++){
-        if(rand()%2 == 1)
-            r.set(i);
-    }
-    maior = r;
-
     for(int i=0;i<nc;i++){
         int aux[3];
         fscanf(f,"%d %d %d 0", &aux[0], &aux[1], &aux[2]);
@@ -72,31 +67,47 @@ int main(int argc, char **argv){
             }
         }
     }
-    int smaior = foo(r,vet);
-    double temp = T0;
-    int stag = 0, i;
-    for(i=0; i<N && stag<STAG; i++){
-        int score = foo(r,vet);
-        if(score>=smaior){
-            maior = r;
-            smaior = score;
-        }
-        int j = rand()%v;
-        r.flip(j);
-        int newscore = foo(r,vet);
-        int delta = score - newscore;
-        if(newscore>score){
-            stag=0;
-            continue;
-        }
-        stag++;
-        if(exp(-delta/temp)<(rand()%1001)/1000.0)
-            r.flip(j);
-        temp=(T0-TN)/(1+exp(.3*(i - N/2))) + TN;
-    }
 
-    printf("Iterações:%d Cláusulas satisfeitas:%d\n",i,foo(r,vet));
-    printBit(maior);
+    int resps[IT];
+    double media=.0,dp=.0;
+    for(int k=0; k<IT; k++){
+        for(int i=0; i<v; i++){
+            if(rand()%2 == 1)
+                r.set(i);
+        }
+        maior = r;
+        int smaior = foo(r,vet);
+        double temp = T0;
+        int stag = 0, i;
+        for(i=0; i<N && stag<STAG; i++){
+            int score = foo(r,vet);
+            if(score>=smaior){
+                maior = r;
+                smaior = score;
+            }
+            int j = rand()%v;
+            r.flip(j);
+            int newscore = foo(r,vet);
+            int delta = score - newscore;
+            if(newscore>score){
+                stag=0;
+            continue;
+            }
+            stag++;
+            if(exp(-delta/temp)<(rand()%1001)/1000.0)
+                r.flip(j);
+            temp=(T0-TN)/(1+exp(.3*(i - N/2))) + TN;
+        }
+        printf("Iterações:%d Cláusulas satisfeitas:%d\n",i,resps[k]=foo(r,vet));
+        printBit(maior);
+        media+=resps[k];
+    }
+    media/=IT;
+    for(int i=0; i<IT; i++)
+        dp+= (resps[i]-media)*(resps[i]-media);
+    dp = sqrt(dp);
+    printf("Média:%lf Desvio Padrão:%lf\n",media,dp);
+
     fclose(f);
     return 0;
 }
