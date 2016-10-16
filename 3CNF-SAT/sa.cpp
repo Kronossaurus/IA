@@ -17,8 +17,9 @@ typedef struct cl{
     unsigned p[3];
 }cl;
 int foo(bitset<BSIZE> r, cl *vet){
-    int cont = 0,i;
-//#pragma omp parallel for private(i) shared(vet,cont,nc)
+    int i;
+    int cont=0;
+#pragma omp parallel for private(i) shared(vet,nc) reduction(+:cont)
     for(i=0; i<nc; i++){
         if(r[vet[i].p[0]] == vet[0].b[0] || r[vet[i].p[1]] == vet[1].b[1] || r[vet[i].p[2]] == vet[2].b[2])
             cont++;
@@ -105,6 +106,7 @@ int main(int argc, char **argv){
     media/=IT;
     for(int i=0; i<IT; i++)
         dp+= (resps[i]-media)*(resps[i]-media);
+    dp/=IT;
     dp = sqrt(dp);
     printf("Média:%lf Desvio Padrão:%lf\n",media,dp);
 
