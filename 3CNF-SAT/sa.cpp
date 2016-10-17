@@ -7,8 +7,8 @@
 #define BSIZE 250
 #define T0 500000
 #define TN 0
-#define N 500000
-#define STAG 100
+#define N 251000
+#define STAG 350
 #define IT 10
 using namespace std;
 int v,nc;
@@ -60,11 +60,11 @@ int main(int argc, char **argv){
         for(int j=0;j<3;j++){
             if(aux[j]<0){
                 vet[i].b[j] = false;
-                vet[i].p[j] = -aux[j];
+                vet[i].p[j] = -aux[j]-1;
             }
             else{
                 vet[i].b[j] = true;
-                vet[i].p[j] = aux[j];
+                vet[i].p[j] = aux[j]-1;
             }
         }
     }
@@ -75,6 +75,8 @@ int main(int argc, char **argv){
         for(int i=0; i<v; i++){
             if(rand()%2 == 1)
                 r.set(i);
+            else
+                r.reset(i);
         }
         maior = r;
         int smaior = foo(r,vet);
@@ -82,6 +84,7 @@ int main(int argc, char **argv){
         int stag = 0, i;
         for(i=0; i<N && stag<STAG; i++){
             int score = foo(r,vet);
+            if(score == nc) break;
             if(score>=smaior){
                 maior = r;
                 smaior = score;
