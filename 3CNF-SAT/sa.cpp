@@ -5,7 +5,7 @@
 #include <cmath>
 #include <omp.h>
 #define BSIZE 250
-#define T0 100
+#define T0 100000
 #define TN 0
 #define N 200000
 #define STAG 350
@@ -33,7 +33,6 @@ void printBit(bitset<BSIZE> r){
     printf("\n");
 }
 int main(int argc, char **argv){
-    printf("Teste\n");
     if(argc != 2){
         printf("Argumentos: 1-Nome do arquivo\n");
         return 0;
@@ -69,10 +68,9 @@ int main(int argc, char **argv){
             }
         }
     }
-    printf("Teste\n");
-    int resps[IT],vits[IT],score[IT][N];
+    int resps[IT],vits[IT],score[N];
+    double temp[N];
     double media=.0,dp=.0,its=.0,dpits=.0;
-    double temp[IT+1];
     for(int k=0; k<IT; k++){
         for(int i=0; i<v; i++){
             if(rand()%2 == 1)
@@ -83,26 +81,28 @@ int main(int argc, char **argv){
         maior = r;
         int smaior = foo(r,vet);
         temp[0]=T0;
-        int stag = 0, i;
+        int stag = 0, i=0;
         for(i=0; i<N && stag<STAG; i++){
-            score[k][i] = foo(r,vet);
-            if(score[k][i] == nc) break;
-            if(score[k][i]>=smaior){
+            score[i] = foo(r,vet);
+            if(score[i] == nc) break;
+            if(score[i]>=smaior){
                 maior = r;
-                smaior = score[k][i];
+                smaior = score[i];
             }
             int j = rand()%v;
             r.flip(j);
             int newscore = foo(r,vet);
-            int delta = score[k][i] - newscore;
-            if(newscore>score[k][i]){
+            int delta = score[i] - newscore;
+            if(newscore>score[i]){
                 stag=0;
                 continue;
             }
             stag++;
             if(exp(-delta/temp[i])<(rand()%1001)/1000.0)
                 r.flip(j);
-            temp[i+1]=(T0-TN)/(1.0+exp(0.3*(i - N/2))) + TN;
+            temp[i+1] = temp[i]*.9;
+            printf("%lf\n",temp[i]);
+            //temp[i+1]=(T0-TN)/(1.0+exp(0.3*(i - N/2))) + TN;
             //printf("%lf\n",(T0-TN)/(1.0+exp(0.3*(i - N/2))) + TN);
         }
         printf("Iterações: %d\tCláusulas satisfeitas: %d\n",i,resps[k]=foo(r,vet));
@@ -125,7 +125,7 @@ int main(int argc, char **argv){
     printf("Média de iterações: %lf\tDesvio Padrão: %lf\n",its,dpits);
 
     for(int i=0; i<=vits[IT-1]; i++){
-        fprintf(out,"%d %lf %d\n",i,temp[i],score[IT-1][i]);
+        fprintf(out,"%d %lf %d\n",i,temp[i],score[i]);
     }
     fclose(f);
     fclose(out);
