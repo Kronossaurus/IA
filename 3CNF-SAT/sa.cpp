@@ -5,10 +5,9 @@
 #include <cmath>
 #include <omp.h>
 #define BSIZE 250
-#define T0 500000
+#define T0 100000
 #define TN 1
-#define N 20000
-#define STAG 350
+#define N 300000
 #define IT 10
 using namespace std;
 int v,nc;
@@ -81,10 +80,9 @@ int main(int argc, char **argv){
         maior = r;
         int smaior = foo(r,vet);
         temp[0]=T0;
-        int stag = 0, i=0;
-        for(i=0; i<N && stag<STAG; i++){
+        int i=0;
+        for(i=0; i<N && score[i-1] != nc; i++){
             score[i] = foo(r,vet);
-            if(score[i] == nc) break;
             if(score[i]>=smaior){
                 maior = r;
                 smaior = score[i];
@@ -94,20 +92,15 @@ int main(int argc, char **argv){
             int newscore = foo(r,vet);
             int delta = score[i] - newscore;
             temp[i+1] = temp[i]*.9;
-            //temp[i+1] = T0 - (double)i*(T0-TN)/N;
-            //temp[i+1]=(T0-TN)/(1.0+exp(0.3*(i - (double)N/2))) + TN;
-            //temp[i+1]=T0*exp(-((double)1.0/N)*log((double)T0/TN)*i);
-            //temp[i+1]=T0*exp(-(1/(N*N))*log(T0/TN)*i*i);
-            if(newscore>score[i]){
-                stag=0;
-                continue;
-            }
-            stag++;
+            //temp[i+1] = T0 - (double)i*(T0-TN)/N;//0
+            //temp[i+1]=(T0-TN)/(1.0+exp(0.3*(i - (double)N/2))) + TN;//4
+            //temp[i+1]=T0*exp(-((double)1.0/N)*log((double)T0/TN)*i);//8
+            //temp[i+1]=T0*exp(-(double)1/(N*N)*log((double)T0/TN)*i*i);//9
             if(exp(-delta/temp[i])<(rand()%1001)/1000.0)
                 r.flip(j);
         }
         printf("Iterações: %d\tCláusulas satisfeitas: %d\n",i,resps[k]=foo(r,vet));
-        vits[k] = i;
+        vits[k] = i-1;
         printBit(maior);
         media+=resps[k];
         its+= vits[k];
