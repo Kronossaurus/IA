@@ -93,6 +93,7 @@ int main(int argc, char **argv){
             r.flip(j);
             int newscore = foo(r,vet);
             int delta = score[i] - newscore;
+            temp[i+1]=(T0-TN)/(1.0+exp(0.3*(i - N/2))) + TN;
             if(newscore>score[i]){
                 stag=0;
                 continue;
@@ -100,10 +101,6 @@ int main(int argc, char **argv){
             stag++;
             if(exp(-delta/temp[i])<(rand()%1001)/1000.0)
                 r.flip(j);
-            temp[i+1] = temp[i]*.9;
-            printf("%lf\n",temp[i]);
-            //temp[i+1]=(T0-TN)/(1.0+exp(0.3*(i - N/2))) + TN;
-            //printf("%lf\n",(T0-TN)/(1.0+exp(0.3*(i - N/2))) + TN);
         }
         printf("Iterações: %d\tCláusulas satisfeitas: %d\n",i,resps[k]=foo(r,vet));
         vits[k] = i;
