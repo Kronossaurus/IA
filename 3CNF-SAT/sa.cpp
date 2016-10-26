@@ -5,9 +5,9 @@
 #include <cmath>
 #include <omp.h>
 #define BSIZE 250
-#define T0 100000
+#define T0 100
 #define TN 1
-#define N 300000
+#define N 100000
 #define IT 10
 using namespace std;
 int v,nc;
@@ -91,15 +91,16 @@ int main(int argc, char **argv){
             r.flip(j);
             int newscore = foo(r,vet);
             int delta = score[i] - newscore;
-            temp[i+1] = temp[i]*.9;
+            //temp[i+1] = temp[i]*.9;
             //temp[i+1] = T0 - (double)i*(T0-TN)/N;//0
             //temp[i+1]=(T0-TN)/(1.0+exp(0.3*(i - (double)N/2))) + TN;//4
-            //temp[i+1]=T0*exp(-((double)1.0/N)*log((double)T0/TN)*i);//8
+            temp[i+1]=exp(-(double)i/N*log((double)T0/TN))*T0;//8
             //temp[i+1]=T0*exp(-(double)1/(N*N)*log((double)T0/TN)*i*i);//9
-            if(exp(-delta/temp[i])<(rand()%1001)/1000.0)
+            //temp[i+1]=exp(-(double)20*i/N*log((double)T0/TN))*T0;//minha formula
+            if(exp((double)-delta/temp[i])<(rand()%1001)/1000.0)
                 r.flip(j);
         }
-        printf("Iterações: %d\tCláusulas satisfeitas: %d\n",i,resps[k]=foo(r,vet));
+        printf("Iterações: %d\tCláusulas satisfeitas: %d\n",i,resps[k]=smaior);
         vits[k] = i-1;
         printBit(maior);
         media+=resps[k];
