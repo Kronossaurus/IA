@@ -22,9 +22,30 @@ void sendSquare(char **mat, int size ,int n){
             for(k = 0; k < n/size; k++){
                 MPI_Pack(&mat[i*n/size + k][j*n/size], n/size, MPI_CHAR, buf, sizeof(char)*n*n/size/size, &position, MPI_COMM_WORLD);
             }
-            MPI_Send(buf, n*n/size/size, MPI_PACKED, i*size+j,MSG_TAG, MPI_COMM_WORLD);
+            MPI_Send(buf, 1, MPI_PACKED, i*size+j,MSG_TAG, MPI_COMM_WORLD);
+			free(buf);         
          }
     }
+}
+
+void recvSquare(int n, int size){
+}
+
+void sendFormiga(Formiga *f, int n, int send, int *vivas){
+	int position;
+	void *buf = malloc(sizeof(char)+sizeof(int)*5);
+
+	MPI_Pack(&f[n]->x, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
+	MPI_Pack(&f[n]->y, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
+	MPI_Pack(&f[n]->estado, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
+	MPI_Pack(&f[n]->raio, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
+	MPI_Pack(&f[n]->lastm, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
+	MPI_Pack(&f[n]->id, 1, MPI_CHAR, buf, sizeof(char), &position, MPI_COMM_WORLD);
+
+	MPI_Send(buf, 1, MPI_PACKED, send,MSG_TAG, MPI_COMM_WORLD);
+
+	f[n] = &f[--(*vivas)];
+	realloc(f, sizeof(Formiga)*(*vivas));
 }
 
 void initMat(char **mat, int n){
@@ -49,12 +70,25 @@ void preencherMat(char **mat, int itens, int n){
         }
     }
 }
-void simular(Formiga *f, int n, char **mat, int nf, int z){
+void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
     //movimento
-    int m, refazer;
+    int m, refazer, flag;
+    MPI_Request request;
+    MPI_Status status;
+    void *inbuf = malloc(sizeof(char)+sizeof(int)*5);
     for(int p=z;p<nf+z && p<vivas;p++){
-    	MPI_Irecv(*f, 1, MPI_PACKED, MPI_ANY, MSG_TAG, MPI_COMM_WORLD, MPI_Request *request)
-            m = 1+rand()%8;
+    	MPI_Irecv(inbuf, 1, MPI_PACKED, MPI_ANY, MSG_TAG, MPI_COMM_WORLD, MPI_Request *request);
+    	MPI_Test(&request, &flag, &status);
+    	if(flag == 1){
+    		realloc(f,++(*vivas));
+			MPI_Unpack(&f[vivas-1]->x, sizeof(int), 1, MPI_INT, MPI_COMM_WORLD);
+			MPI_Unpack(&f[vivas-1]->y, sizeof(int), 1, MPI_INT, MPI_COMM_WORLD);
+			MPI_Unpack(&f[vivas-1]->estado, sizeof(int), 1, MPI_INT, MPI_COMM_WORLD);
+			MPI_Unpack(&f[vivas-1]->raio, sizeof(int), 1, MPI_INT, MPI_COMM_WORLD);
+			MPI_Unpack(&f[vivas-1]->lastm, sizeof(int), 1, MPI_INT, MPI_COMM_WORLD);
+			MPI_Unpack(&f[vivas-1]->id, sizeof(int), 1, MPI_CHAR, MPI_COMM_WORLD);
+        }
+        m = 1+rand()%8;
             if(m==1){
 	            if(f[p].x>0 && f[p].y>0){
 	                f[p].x--;
@@ -172,6 +206,7 @@ void simular(Formiga *f, int n, char **mat, int nf, int z){
         }
         mtx[f[p].x][f[p].y].unlock();
     }
+    free(inbuf);
 }
 int main(int argc, char **argv){
     
@@ -200,9 +235,9 @@ int main(int argc, char **argv){
         initMat(mat, n);
         srand(time(NULL));
         preencherMat(mat, itens, n);
-        //sendSquare(mat, size, n);
+        sendSquare(mat, size, n);
 
-        for (i = 0; i < size; i++){
+        /*for (i = 0; i < size; i++){
             for(j = 0; j < size; j++){
                 void *buf = malloc(sizeof(char)*n*n/size/size);
                
@@ -210,15 +245,22 @@ int main(int argc, char **argv){
                     MPI_Pack(&mat[i*n/size + k][j*n/size], n/size, MPI_CHAR, buf, sizeof(char)*n*n/size/size, &position, MPI_COMM_WORLD);
                 }
                 MPI_Send(buf, n*n/size, MPI_PACKED, i*size+j,MSG_TAG, MPI_COMM_WORLD);
+
              }
-        }
+        }*/
 
     } 
 
     MPI_Status status;
+    //recvSquare(n, size)
     void *inbuf = malloc(sizeof(char)*n*n/size/size);
     MPI_Recv(inbuf, sizeof(char)*n*n/size/size, MPI_PACKED, 0, MSG_TAG, MPI_COMM_WORLD, &status);
+	MPI_Pack(&mat[i*n/size + k][j*n/size], n/size, MPI_CHAR, buf, sizeof(char)*n*n/size/size, &position, MPI_COMM_WORLD);
+	MPI_Unpack(&f[n]->x, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
+ 	//unpacks
 
+ 	free(inbuf);
+	
 	int i;
 	Formiga *formigas = (Formiga*)malloc(sizeof(Formiga)*vivas);
 	for(i = 0; i < vivas; i++){
@@ -228,14 +270,19 @@ int main(int argc, char **argv){
 		formigas[i]->raio = raio;
 		formigas[i]->lastm = -1;
     }
+
+    for(i = 0; i < it; i++){
+    	#pragma omp parallel for shared(f, n, mat, cont)
+    	for (int j = 0; j < 8; ++j)
+    	{
+    		simular(f, n/sqrt(size), mat, vivas, z, &vivas);
+    	}
+    }
     
-
-
- 	MPI_Send(*f, Formiga*vivas, MPI_INT, i*size+j, MSG_TAG, MPI_COMM_WORLD);
- 	MPI_Recv(*f, Formiga*vivas, MPI_INT, MPI_ANY, MSG_TAG, MPI_COMM_WORLD, &status);
+    free(formigas);    
+    free(mat);
+    free(data);
     
     MPI_Finalize();
     return 0;
 }
-
-
