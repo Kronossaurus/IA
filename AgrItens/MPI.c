@@ -106,6 +106,15 @@ void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
 	                f[p].lastm = 1;
 	            }
 	            else{
+                        if(rank-sqrt(size) < 0)
+                            sendFormiga(f,n,rank+sqrt(size)*(sqrt(size)-1),vivas);
+                        else
+                            sendFormiga(f,n,rank-sqrt(size),vivas);
+
+                        if((rank)%(int)sqrt(size) == 0)
+                            sendFormiga(f,n,rank+sqrt(size),vivas);
+                        else
+                            sendFormiga(f,n,rank-1,vivas);
 	            	//mensagem
 	            }
             }
@@ -116,7 +125,7 @@ void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
 	            }
 	            else{
                         if(rank-sqrt(size) < 0)
-                            sendFormiga(f,n,size-1-sqrt(size)+(rank%(int)sqrt(size)),vivas);
+                            sendFormiga(f,n,rank+sqrt(size)*(sqrt(size)-1),vivas);
                         else
                             sendFormiga(f,n,rank-sqrt(size),vivas);
 	            }
@@ -128,7 +137,15 @@ void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
 	                f[p].lastm = 3;
 	            }
 	            else{
+                        if(rank-sqrt(size) < 0)
+                            sendFormiga(f,n,rank+sqrt(size)*(sqrt(size)-1),vivas);
+                        else
+                            sendFormiga(f,n,rank-sqrt(size),vivas);
 	            	//mensagem
+                        if((rank+1)%(int)sqrt(size) == 0)
+                            sendFormiga(f,n,rank-sqrt(size),vivas);
+                        else
+                            sendFormiga(f,n,rank+1,vivas);
 	            }
 	        }
             else if(m==4){
@@ -137,7 +154,10 @@ void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
 	                f[p].lastm = 4;
 	            }
 	            else{
-	            	//mensagem
+                        if((rank)%(int)sqrt(size) == 0)
+                            sendFormiga(f,n,rank+sqrt(size),vivas);
+                        else
+                            sendFormiga(f,n,rank-1,vivas);
 	            }
 	        }
             else if(m==5){
@@ -146,7 +166,10 @@ void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
 	                f[p].lastm = 5;
 	            }
 	            else{
-	            	//mensagem
+                        if((rank+1)%(int)sqrt(size) == 0)
+                            sendFormiga(f,n,rank-sqrt(size),vivas);
+                        else
+                            sendFormiga(f,n,rank+1,vivas);
 	            }
 	        }
             else if(m==6){
@@ -156,7 +179,15 @@ void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
 	                f[p].lastm = 6;
 	            }
 	            else{
+                        if(rank+sqrt(size) > size-1)
+                            sendFormiga(f,n,rank-sqrt(size)*(sqrt(size)-1),vivas);
+                        else
+                            sendFormiga(f,n,rank+sqrt(size),vivas);
 	            	//mensagem
+                        if((rank)%(int)sqrt(size) == 0)
+                            sendFormiga(f,n,rank+sqrt(size),vivas);
+                        else
+                            sendFormiga(f,n,rank-1,vivas);
 	            }
             }
             else if(m==7){
@@ -165,7 +196,10 @@ void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
 	                f[p].lastm = 7;
 	            }
 	            else{
-	            	//mensagem
+                        if(rank+sqrt(size) > size-1)
+                            sendFormiga(f,n,rank-sqrt(size)*(sqrt(size)-1),vivas);
+                        else
+                            sendFormiga(f,n,rank+sqrt(size),vivas);
 	            }
 	        }
             else if(m==8){
@@ -175,7 +209,15 @@ void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
 	                f[p].lastm = 8;
 	            }
 	            else{
+                        if(rank+sqrt(size) > size-1)
+                            sendFormiga(f,n,rank-sqrt(size)*(sqrt(size)-1),vivas);
+                        else
+                            sendFormiga(f,n,rank+sqrt(size),vivas);
 	            	//mensagem
+                        if((rank+1)%(int)sqrt(size) == 0)
+                            sendFormiga(f,n,rank-sqrt(size),vivas);
+                        else
+                            sendFormiga(f,n,rank+1,vivas);
 	            }
 	        }
 
