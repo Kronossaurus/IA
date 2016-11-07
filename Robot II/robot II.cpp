@@ -7,8 +7,11 @@
 #include <iterator>
 #include <unistd.h>
 #include <omp.h>
+//Auxiliares
 #define SLEEP 6e4
 #define PESO_DIST 1
+#define REPETIDO 1
+
 
 //Ferramentas
 #define BATERIA '0'
@@ -23,12 +26,15 @@
 #define PETROL  '7'
 #define FUNDIC  '8'
 #define VIGAS   '9'
+
 using namespace std;
 int x_0,y_0, cont, size;
 class Item{
+    public:
     char tipo;
     int x,y;
     Item(int x, int y, char tipo) : tipo(tipo), x(x), y(y){};
+    Item(){};
 };
 typedef struct{
     pair<int,int> ant;
@@ -204,7 +210,6 @@ int AStar(vector<vector<int> > custo){
             Star vnorte(aux.first-1,aux.second,custo[aux.first-1][aux.second]+r[aux.first][aux.second].custo,aux.first,aux.second);
             pair<int,int> norte(aux.first-1,aux.second);
             if(find(mem.begin(),mem.end(),norte) == mem.end()){
-                //printf("%d %d\n",norte.first,norte.second);
                 v.push_back(vnorte);
             }
         }
@@ -212,7 +217,6 @@ int AStar(vector<vector<int> > custo){
             Star vleste(aux.first,aux.second+1,custo[aux.first][aux.second+1]+r[aux.first][aux.second].custo,aux.first,aux.second);
             pair<int,int> leste(aux.first,aux.second+1);
             if(find(mem.begin(),mem.end(),leste) == mem.end()){
-                //printf("%d %d\n",leste.first,leste.second);
                 v.push_back(vleste);
             }
         }
@@ -220,7 +224,6 @@ int AStar(vector<vector<int> > custo){
             Star vsul(aux.first+1,aux.second,custo[aux.first+1][aux.second]+r[aux.first][aux.second].custo,aux.first,aux.second);
             pair<int,int> sul(aux.first+1,aux.second);
             if(find(mem.begin(),mem.end(),sul) == mem.end()){
-                //printf("%d %d\n",sul.first,sul.second);
                 v.push_back(vsul);
             }
         }
@@ -228,12 +231,10 @@ int AStar(vector<vector<int> > custo){
             Star voeste(aux.first,aux.second-1,custo[aux.first][aux.second-1]+r[aux.first][aux.second].custo,aux.first,aux.second);
             pair<int,int> oeste(aux.first,aux.second-1);
             if(find(mem.begin(),mem.end(),oeste) == mem.end()){
-                //printf("%d %d\n",oeste.first,oeste.second);
                 v.push_back(voeste);
             }
         }
         v.sort(compareAst);
-        //v.sort(compareAst2);
     }
     return 0;
 }
@@ -264,12 +265,30 @@ int main(int argc, char **argv){
                 custo[i][j] = 15;
         }
     }
-    List<Item> itens;
-    List<Item> fabricas;
-    for(int i=0; i<5;){
+    Vector<Item> itens;
+    Vector<Item> fabricas;
+    for(int i=0; i<30; i++){//colocando fabricas
+        Item aux;
+        fscanf(f,"%d",&aux.x);
+        fscanf(f,"%d",&aux.y);
+        aux.tipo = GENETIC + i;
+        fabricas.push_back(aux);
+    }
+
+    for(int i=0; i<25;){//colocando itens
         Item aux;
         aux.x = rand()%size;
         aux.y = rand()%size;
+        int flag = 0;
+        for(int j=0; j<i; j++){
+            if(fabricas[j].x == aux.x && fabricas[j].y == aux.y){
+                flag = REPETIDO;
+            }
+        }
+        if(flag != REPETIDO){
+            aux.tipo = GENETIC + i++;
+            itens.push_back(aux);
+        }
     }
     AStar(custo);
     return 0;
