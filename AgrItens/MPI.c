@@ -16,29 +16,30 @@ typedef struct{
 int rank, size;
 void sendSquare(char **mat, int size ,int n){
     int i,j,k,position=0;
-    for (i = 0; i < size; i++){
-        for(j = 0; j < size; j++){
-            void *buf = malloc(sizeof(char)*n*n/size/size);
-            for(k = 0; k < n/size; k++){
-                MPI_Pack(&mat[i*n/size + k][j*n/size], n/size, MPI_CHAR, buf, sizeof(char)*n*n/size/size, &position, MPI_COMM_WORLD);
+    for (i = 0; i < sqrt(size); i++){
+        for(j = 0; j < sqrt(size); j++){
+            void *buf = malloc(sizeof(char)*n*n); //n = dim
+            for(k = 0; k < n; k++){//size = num comp
+                MPI_Pack(&mat[i*n + k][j*n], n, MPI_CHAR, buf, sizeof(char)*n, &position, MPI_COMM_WORLD);
             }
-            MPI_Send(buf, 1, MPI_PACKED, i*size+j,MSG_TAG, MPI_COMM_WORLD);
+            MPI_Send(buf, n, MPI_PACKED, i*sqrt(size)+j, MSG_TAG, MPI_COMM_WORLD);
             free(buf);
          }
     }
 }
 
 char** recvSquare(int n, int size){
-    char **mat = (char**)malloc(sizeof(char*)*n/sqrt(size));
+    char **mat = (char**)malloc(sizeof(char*)*n);
     int i=0;
-    for(;i<n/sqrt(size);i++){
+    for(;i<n;i++){
         mat[i] = (char*)malloc(sizeof(char));
     }
-    void *inbuf = malloc(sizeof(char)*n*n/sqrt(size));
+    void *inbuf = malloc(sizeof(char)*n*n);
     MPI_Status status;
-    int position;
+    int position = 0;
     MPI_Recv(inbuf, sizeof(char)*n*n, MPI_PACKED, 0, MSG_TAG, MPI_COMM_WORLD, &status);
-    MPI_Unpack(inbuf, sizeof(char)*n*n, &position, &mat, n*n, MPI_INT, MPI_COMM_WORLD);
+//for para desempacotar
+    MPI_Unpack(inbuf, sizeof(char)*n, &position, &mat[position][0], n, MPI_CHAR, MPI_COMM_WORLD);
     return mat;
 }
 
