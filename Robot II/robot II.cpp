@@ -238,6 +238,13 @@ int AStar(vector<vector<int> > custo){
     }
     return 0;
 }
+bool achar(List<Item> itens, Item aux){
+    for(auto it = itens.begin(); it!=itens.end(); it++){
+        if(it.x == aux.x && it.y == aux.y)
+            return true;
+    }
+    return false;
+}
 int main(int argc, char **argv){
     if(argc != 2){
         printf("Argumentos:\n1 - Arquivo de ambiente\n");
@@ -279,14 +286,18 @@ int main(int argc, char **argv){
         Item aux;
         aux.x = rand()%size;
         aux.y = rand()%size;
-        int flag = 0;
-        for(int j=0; j<i; j++){
-            if(fabricas[j].x == aux.x && fabricas[j].y == aux.y){
-                flag = REPETIDO;
-            }
-        }
-        if(flag != REPETIDO){
+        if(mat[x][y] == 0 && achar(fabricas, aux) == false){
             aux.tipo = GENETIC + i++;
+            fabricas.push_back(aux);
+        }
+    }
+    for(int i=0; i<30;){
+        Item aux;
+        aux.x = rand()%size;
+        aux.y = rand()%size;
+        if(mat[x][y] == 0 && achar(fabricas, aux) == false && achar(itens, aux) == false){
+            aux.tipo = BATERIA + i<10? 0 : i<18? 1 : i<24? 2 : i<28? 3 : 4;
+            i++;
             itens.push_back(aux);
         }
     }
