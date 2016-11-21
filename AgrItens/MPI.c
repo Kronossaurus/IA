@@ -28,7 +28,7 @@ void sendSquare(char **mat, int size ,int n){
     }
 }
 
-char** recvSquare(int n, int size){
+char** recvSquare(int n){
     char **mat = (char**)malloc(sizeof(char*)*n);
     int i=0;
     for(;i<n;i++){
@@ -38,8 +38,9 @@ char** recvSquare(int n, int size){
     MPI_Status status;
     int position = 0;
     MPI_Recv(inbuf, sizeof(char)*n*n, MPI_PACKED, 0, MSG_TAG, MPI_COMM_WORLD, &status);
-//for para desempacotar
-    MPI_Unpack(inbuf, sizeof(char)*n, &position, &mat[position][0], n, MPI_CHAR, MPI_COMM_WORLD);
+    for(i=0;i<n;i++){
+        MPI_Unpack(inbuf, sizeof(char)*n, &position, &mat[i][0], n, MPI_CHAR, MPI_COMM_WORLD);
+    }
     return mat;
 }
 
@@ -285,7 +286,7 @@ int main(int argc, char **argv){
     if (rank == 0){
         char **mat = (char**)malloc(sizeof(char*)*n*sqrt(size));
         char *data = (char *)malloc(sizeof(char*)*(n*n*size));
-        int i,j,k,position=0;
+        int i;
         for (i = 0; i < n*sqrt(size); i++) {
             mat[i] = &data[i * n*(int)sqrt(size)];
         }
@@ -308,8 +309,8 @@ int main(int argc, char **argv){
         free(data);
     }
 
-    recvSquare(n, size);
-    char **mat = recvSquare(n,size);
+    recvSquare(n);
+    char **mat = recvSquare(n);
     int j, i;
     Formiga *formigas = (Formiga*)malloc(sizeof(Formiga)*vivas);
     for(i = 0; i < vivas; i++){
