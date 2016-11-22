@@ -18,11 +18,15 @@ void sendSquare(char **mat, int size ,int n){
     int i,j,k,position=0;
     for (i = 0; i < sqrt(size); i++){
         for(j = 0; j < sqrt(size); j++){
+            position=0;
             void *buf = malloc(sizeof(char)*n*n); //n = dim
             for(k = 0; k < n; k++){//size = num comp
-                MPI_Pack(&mat[i*n + k][j*n], n, MPI_CHAR, buf, sizeof(char)*n, &position, MPI_COMM_WORLD);
+		printf("(%d, %d)\n", i*n+k, j*n);
+		for(int a=0;a<n;a++)
+			printf("%c ",mat[i*n+k][j*n+a]);
+                MPI_Pack(&mat[i*n+k][j*n], n, MPI_CHAR, buf, sizeof(char)*n*n, &position, MPI_COMM_WORLD);
             }
-            MPI_Send(buf, n, MPI_PACKED, i*sqrt(size)+j, MSG_TAG, MPI_COMM_WORLD);
+            MPI_Send(buf, sizeof(char)*n*n, MPI_PACKED, i*sqrt(size)+j, MSG_TAG, MPI_COMM_WORLD);
             free(buf);
          }
     }
@@ -293,7 +297,7 @@ int main(int argc, char **argv){
         initMat(mat, n*sqrt(size));
         srand(time(NULL));
         preencherMat(mat, itens, n*sqrt(size));
-        sendSquare(mat, size, n*sqrt(size));
+        sendSquare(mat, size, n);
 
         /*for (i = 0; i < size; i++){
             for(j = 0; j < size; j++){
