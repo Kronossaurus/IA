@@ -21,12 +21,15 @@ void sendSquare(char **mat, int size ,int n){
             position=0;
             void *buf = malloc(sizeof(char)*n*n); //n = dim
             for(k = 0; k < n; k++){//size = num comp
-		printf("(%d, %d)\n", i*n+k, j*n);
-		for(int a=0;a<n;a++)
-			printf("%c ",mat[i*n+k][j*n+a]);
+                /*printf("(%d, %d)\n", i*n+k, j*n);*/
+                /*for(int a=0;a<n;a++)*/
+                    /*printf("%c ",mat[i*n+k][j*n+a]);*/
                 MPI_Pack(&mat[i*n+k][j*n], n, MPI_CHAR, buf, sizeof(char)*n*n, &position, MPI_COMM_WORLD);
             }
-            MPI_Send(buf, sizeof(char)*n*n, MPI_PACKED, i*sqrt(size)+j, MSG_TAG, MPI_COMM_WORLD);
+            /*printf("Enviando\n");*/
+            MPI_Request req;
+            MPI_Isend(buf, sizeof(char)*n*n, MPI_PACKED, i*sqrt(size)+j, MSG_TAG, MPI_COMM_WORLD, &req);
+            /*MPI_Send(buf, sizeof(char)*n*n, MPI_PACKED, i*sqrt(size)+j, MSG_TAG, MPI_COMM_WORLD);*/
             free(buf);
          }
     }
@@ -36,15 +39,18 @@ char** recvSquare(int n){
     char **mat = (char**)malloc(sizeof(char*)*n);
     int i=0;
     for(;i<n;i++){
-        mat[i] = (char*)malloc(sizeof(char));
+        mat[i] = (char*)malloc(sizeof(char)*n);
     }
     void *inbuf = malloc(sizeof(char)*n*n);
     MPI_Status status;
     int position = 0;
+    /*printf("Recebendo\n");*/
     MPI_Recv(inbuf, sizeof(char)*n*n, MPI_PACKED, 0, MSG_TAG, MPI_COMM_WORLD, &status);
+    /*printf("Recebi\n");*/
     for(i=0;i<n;i++){
-        MPI_Unpack(inbuf, sizeof(char)*n, &position, &mat[i][0], n, MPI_CHAR, MPI_COMM_WORLD);
+        MPI_Unpack(inbuf, sizeof(char)*n*n, &position, &mat[i][0], n, MPI_CHAR, MPI_COMM_WORLD);
     }
+    free(inbuf);
     return mat;
 }
 
@@ -87,6 +93,7 @@ void preencherMat(char **mat, int itens, int n){
 }
 void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
     //movimento
+    printf("Ola\n");
     int m, flag;
     MPI_Request request;
     MPI_Status status;
