@@ -26,7 +26,7 @@ void sendSquare(char **mat, int size ,int n){
                     /*printf("%c ",mat[i*n+k][j*n+a]);*/
                 MPI_Pack(&mat[i*n+k][j*n], n, MPI_CHAR, buf, sizeof(char)*n*n, &position, MPI_COMM_WORLD);
             }
-            /*printf("Enviando\n");*/
+            // printf("Enviando\n");
             MPI_Request req;
             MPI_Isend(buf, sizeof(char)*n*n, MPI_PACKED, i*sqrt(size)+j, MSG_TAG, MPI_COMM_WORLD, &req);
             /*MPI_Send(buf, sizeof(char)*n*n, MPI_PACKED, i*sqrt(size)+j, MSG_TAG, MPI_COMM_WORLD);*/
@@ -44,9 +44,9 @@ char** recvSquare(int n){
     void *inbuf = malloc(sizeof(char)*n*n);
     MPI_Status status;
     int position = 0;
-    /*printf("Recebendo\n");*/
+    // printf("Recebendo\n");
     MPI_Recv(inbuf, sizeof(char)*n*n, MPI_PACKED, 0, MSG_TAG, MPI_COMM_WORLD, &status);
-    /*printf("Recebi\n");*/
+    // printf("Recebi\n");
     for(i=0;i<n;i++){
         MPI_Unpack(inbuf, sizeof(char)*n*n, &position, &mat[i][0], n, MPI_CHAR, MPI_COMM_WORLD);
     }
@@ -55,17 +55,18 @@ char** recvSquare(int n){
 }
 
 void sendFormiga(Formiga *f, int n, int send, int *vivas){
-    int position;
-    void *buf = malloc(sizeof(char)+sizeof(int)*5);
+    int position=0;
+    // printf("%d\n", send);
+    void *buf = malloc(sizeof(Formiga));
 
-    MPI_Pack(&f[n].x, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
-    MPI_Pack(&f[n].y, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
-    MPI_Pack(&f[n].estado, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
-    MPI_Pack(&f[n].raio, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
-    MPI_Pack(&f[n].lastm, 1, MPI_INT, buf, sizeof(int), &position, MPI_COMM_WORLD);
-    MPI_Pack(&f[n].id, 1, MPI_CHAR, buf, sizeof(char), &position, MPI_COMM_WORLD);
+    MPI_Pack(&f[n].x, 1, MPI_INT, buf, sizeof(Formiga), &position, MPI_COMM_WORLD);
+    MPI_Pack(&f[n].y, 1, MPI_INT, buf, sizeof(Formiga), &position, MPI_COMM_WORLD);
+    MPI_Pack(&f[n].estado, 1, MPI_INT, buf, sizeof(Formiga), &position, MPI_COMM_WORLD);
+    MPI_Pack(&f[n].raio, 1, MPI_INT, buf, sizeof(Formiga), &position, MPI_COMM_WORLD);
+    MPI_Pack(&f[n].lastm, 1, MPI_INT, buf, sizeof(Formiga), &position, MPI_COMM_WORLD);
+    MPI_Pack(&f[n].id, 1, MPI_CHAR, buf, sizeof(Formiga), &position, MPI_COMM_WORLD);
 
-    MPI_Send(buf, 1, MPI_PACKED, send,MSG_TAG, MPI_COMM_WORLD);
+    MPI_Send(buf, sizeof(Formiga), MPI_PACKED, send,MSG_TAG, MPI_COMM_WORLD);
 
     f[n] = f[--(*vivas)];
     f = (Formiga*)realloc(f, sizeof(Formiga)*(*vivas));
@@ -91,148 +92,172 @@ void preencherMat(char **mat, int itens, int n){
         }
     }
 }
-void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
+Formiga* simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){//botar **f
     //movimento
-    printf("Ola\n");
     int m, flag;
     MPI_Request request;
     MPI_Status status;
     void *inbuf = malloc(sizeof(char)+sizeof(int)*5);
     for(int p=z;p<nf+z && p<*vivas;p++){
-    	MPI_Irecv(inbuf, 1, MPI_PACKED, MPI_ANY_SOURCE, MSG_TAG, MPI_COMM_WORLD, &request);
-    	MPI_Test(&request, &flag, &status);
-    	if(flag == 1){//recvFormiga
+        MPI_Irecv(inbuf, 1, MPI_PACKED, MPI_ANY_SOURCE, MSG_TAG, MPI_COMM_WORLD, &request);
+        MPI_Test(&request, &flag, &status);
+        if(flag == 1){//recvFormiga
             f = (Formiga*)realloc(f, sizeof(Formiga)*++(*vivas));
             int position;
-            MPI_Unpack(inbuf, sizeof(int), &position, &f[*vivas-1].x, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(int), &position, &f[*vivas-1].y, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(int), &position, &f[*vivas-1].estado, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(int), &position, &f[*vivas-1].raio, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(int), &position, &f[*vivas-1].lastm, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(char), &position, &f[*vivas-1].id, 1, MPI_CHAR, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].x, 1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].y, 1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].estado, 1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].raio, 1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].lastm, 1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].id, 1, MPI_CHAR, MPI_COMM_WORLD);
         }
+    int send = rank;
         m = 1+rand()%8;
             if(m==1){
-	            if(f[p].x>0 && f[p].y>0){
-	                f[p].x--;
-	                f[p].y--;
-	                f[p].lastm = 1;
-	            }
-	            else{
-                        if(rank-sqrt(size) < 0)
-                            sendFormiga(f,n,rank+sqrt(size)*(sqrt(size)-1),vivas);
-                        else
-                            sendFormiga(f,n,rank-sqrt(size),vivas);
+                if(f[p].x>0 && f[p].y>0){
+                    f[p].x--;
+                    f[p].y--;
+                    f[p].lastm = 1;
+                }
+                else{
+                    if(rank-sqrt(size) < 0)
+                        send += sqrt(size)*(sqrt(size)-1);
+                    else
+                        send -= sqrt(size);
 
-                        if((rank)%(int)sqrt(size) == 0)
-                            sendFormiga(f,n,rank+sqrt(size),vivas);
-                        else
-                            sendFormiga(f,n,rank-1,vivas);
-	            	//mensagem
-	            }
+                    if((rank)%(int)sqrt(size) == 0)
+                        send += sqrt(size);
+                    else
+                        send -= 1;
+                    // printf("%d\n", send);
+                    sendFormiga(f,n,send,vivas);
+                }
             }
             else if(m==2){
-	            if (f[p].x>0){
-	                f[p].x--;
-	                f[p].lastm = 2;
-	            }
-	            else{
-                        if(rank-sqrt(size) < 0)
-                            sendFormiga(f,n,rank+sqrt(size)*(sqrt(size)-1),vivas);
-                        else
-                            sendFormiga(f,n,rank-sqrt(size),vivas);
-	            }
-	        }
+                if (f[p].x>0){
+                    f[p].x--;
+                    f[p].lastm = 2;
+                }
+                else{
+                    if(rank-sqrt(size) < 0)
+                        send += sqrt(size)*(sqrt(size)-1);
+
+                    else
+                        send -= sqrt(size);
+
+                    // printf("%d %d\n", rank, send);
+                    sendFormiga(f,n,send,vivas);
+                }
+            }
             else if(m==3){
-	            if (f[p].x>0 && f[p].y<n-1){
-	                f[p].x--;
-	                f[p].y++;
-	                f[p].lastm = 3;
-	            }
-	            else{
-                        if(rank-sqrt(size) < 0)
-                            sendFormiga(f,n,rank+sqrt(size)*(sqrt(size)-1),vivas);
-                        else
-                            sendFormiga(f,n,rank-sqrt(size),vivas);
-	            	//mensagem
-                        if((rank+1)%(int)sqrt(size) == 0)
-                            sendFormiga(f,n,rank-sqrt(size),vivas);
-                        else
-                            sendFormiga(f,n,rank+1,vivas);
-	            }
-	        }
+                if (f[p].x>0 && f[p].y<n-1){
+                    f[p].x--;
+                    f[p].y++;
+                    f[p].lastm = 3;
+                }
+                else{
+                    if(rank-sqrt(size) < 0)
+                        send += sqrt(size)*(sqrt(size)-1);
+                    else
+                        send = send - sqrt(size)+1;
+
+                    if((rank+1)%(int)sqrt(size) == 0)
+                        send -= sqrt(size)+1;
+                    else
+                        send += 1;
+
+                    // printf("%d %d\n", rank, send);
+                    sendFormiga(f,n,send,vivas);
+                }
+            }
             else if(m==4){
-	            if (f[p].y>0){
-	                f[p].y--;
-	                f[p].lastm = 4;
-	            }
-	            else{
-                        if((rank)%(int)sqrt(size) == 0)
-                            sendFormiga(f,n,rank+sqrt(size),vivas);
-                        else
-                            sendFormiga(f,n,rank-1,vivas);
-	            }
-	        }
+                if (f[p].y>0){
+                    f[p].y--;
+                    f[p].lastm = 4;
+                }
+                else{
+                    if((rank)%(int)sqrt(size) == 0)
+                        send += sqrt(size);
+                    else
+                        send -= 1;
+                    
+                    sendFormiga(f,n,send,vivas);
+                }
+            }
             else if(m==5){
-	            if (f[p].y<n-1){
-	                f[p].y++;
-	                f[p].lastm = 5;
-	            }
-	            else{
-                        if((rank+1)%(int)sqrt(size) == 0)
-                            sendFormiga(f,n,rank-sqrt(size),vivas);
-                        else
-                            sendFormiga(f,n,rank+1,vivas);
-	            }
-	        }
+                if (f[p].y<n-1){
+                    f[p].y++;
+                    f[p].lastm = 5;
+                }
+                else{
+                    if((rank+1)%(int)sqrt(size) == 0)
+                        send = send - sqrt(size)+1;
+
+                    else
+                        send += 1;
+
+                    // printf("%d %d\n", rank, send);
+                    sendFormiga(f,n,send,vivas);
+                }
+            }
             else if(m==6){
-	            if (f[p].x<n-1 && f[p].y>0){
-	                f[p].x++;
-	                f[p].y--;
-	                f[p].lastm = 6;
-	            }
-	            else{
-                        if(rank+sqrt(size) > size-1)
-                            sendFormiga(f,n,rank-sqrt(size)*(sqrt(size)-1),vivas);
-                        else
-                            sendFormiga(f,n,rank+sqrt(size),vivas);
-	            	//mensagem
-                        if((rank)%(int)sqrt(size) == 0)
-                            sendFormiga(f,n,rank+sqrt(size),vivas);
-                        else
-                            sendFormiga(f,n,rank-1,vivas);
-	            }
+                if (f[p].x<n-1 && f[p].y>0){
+                    f[p].x++;
+                    f[p].y--;
+                    f[p].lastm = 6;
+                }
+                else{
+                    if(rank+sqrt(size) > size-1)
+                        send -= sqrt(size)*(sqrt(size)-1);
+                    else
+                        send += sqrt(size);
+
+                    if((rank)%(int)sqrt(size) == 0)
+                        send += sqrt(size);
+                    else
+                        send -= 1;
+                    
+                    sendFormiga(f,n,send,vivas);
+                }
             }
             else if(m==7){
-	            if (f[p].x<n-1){
-	                f[p].x++;
-	                f[p].lastm = 7;
-	            }
-	            else{
-                        if(rank+sqrt(size) > size-1)
-                            sendFormiga(f,n,rank-sqrt(size)*(sqrt(size)-1),vivas);
-                        else
-                            sendFormiga(f,n,rank+sqrt(size),vivas);
-	            }
-	        }
+                if (f[p].x<n-1){
+                    f[p].x++;
+                    f[p].lastm = 7;
+                }
+                else{
+                    if(rank+sqrt(size) > size-1)
+                        send -= sqrt(size)*(sqrt(size)-1);
+                    else
+                        send += sqrt(size);
+
+                    // printf("%d %d\n", rank, send);
+                    sendFormiga(f,n,send,vivas);
+                }
+            }
             else if(m==8){
-	            if (f[p].x<n-1 && f[p].y<n-1){
-	                f[p].x++;
-	                f[p].y++;
-	                f[p].lastm = 8;
-	            }
-	            else{
-                        if(rank+sqrt(size) > size-1)
-                            sendFormiga(f,n,rank-sqrt(size)*(sqrt(size)-1),vivas);
-                        else
-                            sendFormiga(f,n,rank+sqrt(size),vivas);
-	            	//mensagem
-                        if((rank+1)%(int)sqrt(size) == 0)
-                            sendFormiga(f,n,rank-sqrt(size),vivas);
-                        else
-                            sendFormiga(f,n,rank+1,vivas);
-	            }
-	        }
+                if (f[p].x<n-1 && f[p].y<n-1){
+                    f[p].x++;
+                    f[p].y++;
+                    f[p].lastm = 8;
+                }
+                else{
+                    if(rank+sqrt(size) > size-1)
+                        send -= sqrt(size)*(sqrt(size)-1);
+                    else
+                        send += sqrt(size);
+
+                    //mensagem
+                    if((rank+1)%(int)sqrt(size) == 0)
+                        send = send - sqrt(size)+1;
+
+                    else
+                        send += 1;
+
+                    // printf("%d %d\n", rank, send);
+                    sendFormiga(f,n,send,vivas);
+                }
+            }
 
         //decisao
         omp_set_lock(&mtx[f[p].x][f[p].y]);
@@ -282,6 +307,7 @@ void simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){
         omp_unset_lock(&mtx[f[p].x][f[p].y]);
     }
     free(inbuf);
+    return f;
 }
 int main(int argc, char **argv){
     MPI_Init(&argc,&argv);
@@ -289,7 +315,7 @@ int main(int argc, char **argv){
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if(argc != 6){
-        printf("Argumentos: Tamanho da matriz de cada computador, Quantidade de itens, Quantidade de vivas, Raid de visão, iterações\n");
+        printf("Argumentos: Tamanho da matriz de cada computador, Quantidade de itens, Quantidade de vivas em cada computador, Raid de visão, iterações\n");
         return 0;
     }
 
@@ -320,7 +346,6 @@ int main(int argc, char **argv){
         free(data);
     }
 
-    recvSquare(n);
     char **mat = recvSquare(n);
     int j, i;
     Formiga *formigas = (Formiga*)malloc(sizeof(Formiga)*vivas);
@@ -333,11 +358,13 @@ int main(int argc, char **argv){
     }
 
     for(i = 0; i < it; i++){
-    	#pragma omp parallel for shared(formigas, n, mat)
-    	for (j = 0; j < 8; ++j)
-    	{
-            simular(formigas, n, mat, vivas, ceil(vivas/8.0), &vivas);
-    	}
+        #pragma omp parallel for shared(formigas, n, mat)
+        for (j = 0; j < 8; ++j)
+        {
+            simular(formigas, n, mat, ceil(vivas/8.0), ceil(vivas/8.0)*j, &vivas);
+            // printf("%d\n", j);
+        }
+        printf("Terminou\n");
     }
 
     free(formigas);
