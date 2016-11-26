@@ -97,19 +97,19 @@ Formiga* simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){//bot
     int m, flag;
     MPI_Request request;
     MPI_Status status;
-    void *inbuf = malloc(sizeof(char)+sizeof(int)*5);
+    void *inbuf = malloc(sizeof(Formiga));
     for(int p=z;p<nf+z && p<*vivas;p++){
         MPI_Irecv(inbuf, 1, MPI_PACKED, MPI_ANY_SOURCE, MSG_TAG, MPI_COMM_WORLD, &request);
         MPI_Test(&request, &flag, &status);
         if(flag == 1){//recvFormiga
             f = (Formiga*)realloc(f, sizeof(Formiga)*++(*vivas));
             int position;
-            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].x, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].y, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].estado, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].raio, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].lastm, 1, MPI_INT, MPI_COMM_WORLD);
-            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].id, 1, MPI_CHAR, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].x,       1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].y,       1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].estado,  1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].raio,    1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].lastm,   1, MPI_INT, MPI_COMM_WORLD);
+            MPI_Unpack(inbuf, sizeof(Formiga), &position, &f[*vivas-1].id,      1, MPI_CHAR, MPI_COMM_WORLD);
         }
     int send = rank;
         m = 1+rand()%8;
@@ -180,7 +180,7 @@ Formiga* simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){//bot
                         send += sqrt(size);
                     else
                         send -= 1;
-                    
+
                     sendFormiga(f,n,send,vivas);
                 }
             }
@@ -216,7 +216,7 @@ Formiga* simular(Formiga *f, int n, char **mat, int nf, int z, int *vivas){//bot
                         send += sqrt(size);
                     else
                         send -= 1;
-                    
+
                     sendFormiga(f,n,send,vivas);
                 }
             }
@@ -364,7 +364,7 @@ int main(int argc, char **argv){
             simular(formigas, n, mat, ceil(vivas/8.0), ceil(vivas/8.0)*j, &vivas);
             // printf("%d\n", j);
         }
-        printf("Terminou\n");
+        /*printf("Terminou\n");*/
     }
 
     free(formigas);
